@@ -1,0 +1,109 @@
+{% extends "otree/Page.html" %}
+{% load otree static %}
+
+{% block global_styles  %}
+{% if session.config.testing %}
+<style>
+    #skipTestingBtn {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 99999;
+        opacity: 0.85;
+    }
+    #skipTestingBtn:hover {
+        opacity: 1;
+    }
+</style>
+{% endif %}
+{% endblock %}
+
+{% block global_scripts  %}
+{% if session.config.testing %}
+<button type="button" id="skipTestingBtn" class="btn btn-secondary btn-sm px-3" onclick="skipPageForTesting()">
+    Skip for testing
+</button>
+<script>
+    // Testing-mode helper: fills every visible field on the current page
+    // with a generic answer and submits it, so pages can be clicked through
+    // quickly without answering for real. Pages can define their own
+    // skipPage() function in their own scripts block to set more specific
+    // values; if present, it runs first and this generic pass only fills
+    // in whatever it left empty.
+    function skipPageForTesting() {
+        var form = document.getElementById('form');
+        if (!form) return;
+
+        if (typeof skipPage === 'function') {
+            try {
+                skipPage();
+            } catch (e) {
+                console.error('skipPage() failed:', e);
+            }
+        }
+
+        form.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+            if (!form.querySelector('input[type="radio"][name="' + radio.name + '"]:checked')) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('click', { bubbles: true }));
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        form.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+            if (!cb.checked) {
+                cb.checked = true;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        form.querySelectorAll('select').forEach(function (sel) {
+            if (!sel.value) {
+                var options = Array.prototype.filter.call(sel.options, function (o) { return o.value; });
+                if (options.length) {
+                    sel.value = options[0].value;
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        });
+
+        form.querySelectorAll('input[type="range"]').forEach(function (range) {
+            if (!range.value) {
+                var min = range.min !== '' ? parseFloat(range.min) : 0;
+                var max = range.max !== '' ? parseFloat(range.max) : 100;
+                range.value = (min + max) / 2;
+            }
+            range.dispatchEvent(new Event('input', { bubbles: true }));
+            range.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        form.querySelectorAll('input[type="number"]').forEach(function (el) {
+            if (!el.value) {
+                var min = el.min !== '' ? parseFloat(el.min) : 0;
+                var max = el.max !== '' ? parseFloat(el.max) : min + 10;
+                el.value = (min + max) / 2;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        form.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(function (el) {
+            if (!el.value) {
+                el.value = 'test';
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        // Fill last: some hidden fields (e.g. time-tracking) are only
+        // synced from a visible field's JS listener once that field's
+        // input/change event fires above, so check them after everything else.
+        form.querySelectorAll('input[type="hidden"]').forEach(function (el) {
+            if (!el.value && el.name) {
+                el.value = '0';
+            }
+        });
+
+        form.submit();
+    }
+</script>
+{% endif %}
+{% endblock %}

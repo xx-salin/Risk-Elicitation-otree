@@ -1,0 +1,86 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Round {{ player.round_number }} (of {{ C.NUM_ROUNDS }}) - Payoffs
+{{ endblock }}
+
+
+{% block styles %}
+<style type="text/css">
+     .custom-border {
+        border-color: #d6d8db;
+    }
+    html, body {
+        height: 100%;
+    }
+
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+<!--Include hidden field for time spent-->
+<input type="hidden" name="sequentialTimeSpent" id="sequentialTimeSpent"/>
+
+
+<div class="container bg-light border custom-border">
+        <br>
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all 11 situations of Asset A and Asset B, respectively.</p>
+
+
+
+    <!-- The area with the chart and the button. -->
+
+<div id='canvas' style='position: relative; width: 80%; max-width: 1244px; left: 15%;height: 525px; margin: 0 auto; display: block;'>
+    <!-- The area for the chart-->
+    <ul class="value" id='v' style="position: relative; z-index: -1; left: 50%; top: 50%; transform: translate(-50%, -50%); visibility: hidden;">
+        <font size="6"><li id="re1">  </li></font>
+    </ul>
+    <!-- This is the container for the graph -->
+    <div id='contr2' style='width: 100%; height: 100%; position: relative; z-index: 2000;'></div>
+</div>
+
+
+
+
+<!--This is the next button -->
+<div id="bb1" style='position: relative; left: 35px; top: 0px; right: 0px; padding-bottom: 40px; text-align: center; '>
+
+    <button type="button" class="btn btn-primary" id="updateChartButton" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" onclick="updateTimeSpent()">Next</button>
+    <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000; display: none;" class="otree-btn-next btn btn-primary" onclick="updateTimeSpent()" disabled>Next</button>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js'></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script> <!-- for the draggable of the scrollbar -->
+    <script src="//code.highcharts.com/highcharts.js"></script>
+    <script src="//code.highcharts.com/highcharts-3d.js"></script>
+    <script src="//code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript" src="https://blacklabel.github.io/custom_events/js/customEvents.js"></script>
+
+    <script>
+        var animationtime = {{animation_time}};
+        {% include "_static/Graph_Together_Sequential.js" %}
+    </script>
+
+    <script>
+        let timeSpent = [];
+        let startTime = new Date().getTime();
+
+        function updateTimeSpent() {
+            let endTime = new Date().getTime();
+            let tmpTimeSpent = endTime - startTime;
+            timeSpent.push(tmpTimeSpent);
+            startTime = endTime;
+
+            document.getElementById('sequentialTimeSpent').value = timeSpent; // Update the hidden field with the time spent
+        }
+
+
+    </script>
+
+{{ endblock }}

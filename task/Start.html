@@ -1,0 +1,23 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Round {{ player.round_number}} (of {{ C.NUM_ROUNDS }}) - Start
+{{ endblock }}
+{{ block content }}
+
+    <p>
+    We now start the first round of the experiment.
+    <br>
+    In this round, there are two Assets A and B and 11 possible situations, which are equally likely.
+    On the screens that follow, you will see how each Asset does in each of the 11 possible situations.
+    This will give you an impression of how the assets perform.
+    <br>
+    {{ if player.incentive == "beliefs" }}
+    Your payment will be based on the accuracy of your guesses in one of the {{ C.NUM_ROUNDS }} rounds.
+    {{ else }}
+    Your payment will be based on your choice in one of the {{ C.NUM_ROUNDS }} rounds.
+    {{ endif }}
+    </p>
+    <br>
+    {{ next_button }}
+
+{{ endblock }}

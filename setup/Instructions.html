@@ -1,0 +1,155 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Instructions
+{{ endblock }}
+{{ block content }}
+
+    <div class="tab">
+    <p>
+    <b>Task</b>
+    </p>
+    <p>
+        This experiment has 5 rounds.
+        In each round you will observe the payoffs of two assets, Asset A and Asset B.
+        These assets will generate different payoffs depending on the situation, or state, that they are in.
+        For example, take a risky asset like an Apple stock.
+        In some situations, like when the economy is doing really well and people are buying computers, the price of Apple will go up.
+        In other situations, like when the economy is in a recession, the price of Apple will go down.
+        Similarly, if a rival company releases a nice new product, Apple will go down, but if a rival company goes bankrupt, the price of Apple will go up.
+        <br>
+        You will be provided with information on how well the two different assets do across a number of situations.
+        In some situations one asset will generate a higher payoff than the other, or vice versa.
+        For example, take Asset A and B.
+        In Situation 1, Asset A will generate a payoff of $7 and Asset B will generate a payoff of $2.
+        Alternatively, in Situation 2, Asset A will generate a payoff of $2 and Asset B will generate a payoff of $7.
+        The situation clearly determines which of the two assets is better at any given time.
+        Each situation has an equal chance of being picked at any given time.
+        <p>
+        The payoffs of Asset A and Asset B in one round are unrelated to the payoffs in other rounds.
+        <br>
+        {{ if player.participant.incentive == "choice" }}
+        Your task is to choose between the two assets in each round.
+        We will also ask a few additional questions after the rounds.
+        {{ else }}
+        Your task is to guess different payoffs for the two assets in each round.
+        We will also ask a few additional questions after the rounds.
+        {{ endif }}
+        <p/>
+    </p>
+        On the next page the compensation scheme is described.
+    </p>
+    <br>
+    <p>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="1">Next</button>
+    </p>
+</div>
+<div class="tab">
+    <!-- Duplicate this div if you have more than 3 pages of instructions ... -->
+    <p>
+    <b>Compensation</b>
+    </p>
+    <p>
+        {{ if player.participant.incentive == "choice" }}
+        The exact amount of the bonus payment depends on your choices.
+        It will be based on the payoffs of the asset you choose in one of the 5 rounds.
+        One of these rounds will be randomly selected for the payment.
+        Your bonus payment will be randomly drawn from the payoffs of your chosen asset in this round.
+        <br>
+        You will be informed about the selected round and your exact payment at the end of the experiment.
+        {{ else }}
+        The exact amount of the bonus payment depends on your guesses.
+        It will be based on the accuracy of the guesses you enter in one of the 5 rounds.
+        One of these guesses will be randomly selected for the payment.
+        If your guess is close to the correct answer you receive a bonus of £2.00 (For more information click on the "Details" button).
+        <br>
+        You will be informed about the selected guess and your exact payment at the end of the experiment.
+        {{ endif }}
+    </p>
+    <br>
+    {{ if player.participant.incentive == "choice" }}
+    <p>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="-1">Previous</button>
+        <button class="otree-btn-next btn btn-primary">Next</button>
+    </p>
+    {{ else }}
+    <p>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="-1">Previous</button>
+        <!-- "More Information" Button -->
+        <button type="button" class="otree-btn-next btn btn-primary" id="infoButton">Details</button>
+        <!-- Modal -->
+        <button class="otree-btn-next btn btn-primary">Next</button>
+    </p>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Bonus Payment Details</h2>
+            <p>
+                For some guesses you will be asked to estimate payoffs (in £) and likelihoods (in %). If the selected guess is one of these guesses and your estimate is within 5% of the correct answer, you earn the bonus payment of £2.00.
+                <br>
+                For some guesses you will be asked to choose out of several answer options. If the selected guess is one of these guesses and your chosen option is the correct one, you earn the bonus payment of £2.00.
+            </p>
+        </div>
+    </div>
+    {{ endif }}
+</div>
+<style>
+    .tab {
+        display: none;
+    }
+</style>
+
+<script>
+
+    let activeTab = 0;
+    let tabs = document.getElementsByClassName('tab');
+
+    function showCurrentTabOnly() {
+      for (let i = 0; i < tabs.length; i++) {
+        let tab = tabs[i];
+        if (i === activeTab) {
+          tab.style.display = 'block';
+          tab.scrollIntoView();
+        } else {
+          tab.style.display = 'none';
+        }
+      }
+    }
+
+    showCurrentTabOnly();
+    for (let btn of document.getElementsByClassName('otree-btn-next btn btn-primary')) {
+        btn.onclick = function () {
+            activeTab += parseInt(btn.dataset.offset);
+            showCurrentTabOnly();
+        }
+    }
+</script>
+
+    <script>
+        // Get the modal element
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("infoButton");
+
+        // Get the <span> element that closes the modal
+        var span = document.querySelector(".close");
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+{{ endblock }}

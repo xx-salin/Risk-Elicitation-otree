@@ -1,0 +1,36 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Welcome
+{{ endblock }}
+{{ block content }}
+
+    <p>
+        Dear Participant,
+    </p>
+    <p>
+        Thank you for participating in this study on decision making in financial markets.
+    </p>
+    <p>
+        The amount of money you earn in this study depends on your choices. As such, it is important to read the instructions carefully.
+    </p>
+    <p>
+        At the end of the study, you will click on a link to complete the study and to be redirected to Prolific.
+    </p>
+    <p>
+        Before explaining how the study works, we need to ensure that you are human and speak English on the next pages.
+        You will be excluded from the study and receive no payment if you fail one of these tests.
+    </p>
+    <p>
+        All data will be kept confidential by the researchers.
+        Personal information will not be stored with the data.
+        Participants are free to withdraw any time.
+        By clicking “Next” below you are indicating that you are at least 18 years old, have read and understood this page, and agree to participate in this research study.
+    </p>
+    <p>
+        Thank you for participating!
+    </p>
+    <br>
+    {{ next_button }}
+    <button id="leave_button" class="btn btn-danger" onclick="document.getElementById('isLeaving').value='true'; document.forms[0].submit();">Leave</button>
+    <input type="hidden" name="isLeaving" value="false" id="isLeaving"/>
+{{ endblock }}

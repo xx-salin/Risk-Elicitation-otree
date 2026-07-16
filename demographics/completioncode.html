@@ -1,0 +1,30 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Bonus
+{{ endblock }}
+{{ block content }}
+
+<p>
+    Round {{ bonus_period }} was randomly drawn for your bonus payment.
+</p>
+<p>
+    {{ if player.participant.incentive == "beliefs" }}
+        {{ if player.participant.Bonus == 1 }}
+            Your randomly selected guess in this round qualifies for a bonus payment.
+        {{ else }}
+            Your randomly selected guess in this round does not qualify for a bonus payment.
+        {{ endif }}
+        You thus earn a bonus of £{{ bonusamount }}.
+    {{ else }}
+        You chose {{ asset }} in round {{ bonus_period }}.
+        A payoff of £{{ payoff }} was randomly drawn for {{ asset }} for your bonus payment.
+    {{ endif }}
+</p>
+<p>
+    <b><a href="https://app.prolific.com/submissions/complete?cc=CERJ08U4">Click here to complete the study and to be redirected to Prolific.</a></b>
+</p>
+<br>
+
+{{ endblock }}
+
+

@@ -1,0 +1,30 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Round {{ player.round_number }} (of {{ C.NUM_ROUNDS }}) - End
+{{ endblock }}
+{{ block content }}
+    {{ if player.round_number < C.NUM_ROUNDS }}
+    <p>
+        You completed round {{ player.round_number }}.
+    </p>
+    <p>
+        Next, we start the second round of the experiment with two new assets that are unrelated to the assets so far.
+        <br>
+        Again, there are two Assets A and B and 11 possible situations, which are equally likely.
+    </p>
+    <p>
+        Press "Next" to start round {{ next_round }}.
+    </p>
+    {{ else }}
+    <p>
+        You have reached the end of the final round.
+    </p>
+    <p>
+        Press "Next" to answer a few questions regarding your choices and a short survey before you will be redirected to Prolific.
+    </p>
+    {{ endif }}
+    <br>
+    {{ next_button }}
+
+
+{{ endblock }}

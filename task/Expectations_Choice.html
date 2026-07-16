@@ -1,0 +1,71 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Round {{ round_number }} (of {{ C.NUM_ROUNDS }}) - Guess
+{% endblock %}
+
+{% block content %}
+
+<p>
+    Please guess the average payoff for each of the two assets:
+</p>
+
+<form class = "otree-form" method = "post" role = "form" id = "form" autocomplete = "off">
+    <div class = "_otree-content">
+<div class="form-group">
+    <table id="table1" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Payoff</th>
+                <th>Asset A</th>
+                <th>Asset B</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                <td> Average Payoff </td>
+                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "0" max = "2.2" step = "any" required></td>
+                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "0" max = "2.2" step = "any" required></td>
+                </tr>
+            </tbody>
+    </table>
+<br>
+<br>
+    <p>
+            Please guess the frequency (in %) at which each of the two alternatives has a payoff below 0.9:
+    </p>
+        <table id="table2" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Payoff</th>
+                    <th>Asset A</th>
+                    <th>Asset B</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> Payoff below 0.9 </td>
+                    <td><input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
+                    <td><input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
+                    </tr>
+                    </tbody>
+        </table>
+        </div>
+        </div>
+        </form>
+    <br>
+    <br>
+    <p>
+            Please answer the following additional question regarding the assets' payoffs:
+    </p>
+        {{ formfield "Volatility" }}
+
+<br>
+    <p>
+    <button id = "button" class="otree-btn-next btn btn-primary" >Next</button>
+    </p>
+{% endblock %}
+{% block scripts %}
+
+{% endblock %}

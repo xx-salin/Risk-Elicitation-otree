@@ -1,0 +1,19 @@
+{% extends "global/Page.html" %}
+{{ block title }}
+    Prolific ID
+{{ endblock }}
+{{ block content }}
+
+    {{ formfields }}
+<br>
+    {{ next_button }}
+
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+    function skipPage() {
+        document.getElementById('id_prolificID').value = 'test'.padEnd(24, '0');
+    }
+</script>
+{{ endblock }}

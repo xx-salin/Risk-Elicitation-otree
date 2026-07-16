@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "otree-devserver",
+      "runtimeExecutable": "otree",
+      "runtimeArgs": ["devserver"],
+      "port": 8000
+    }
+  ]
+}

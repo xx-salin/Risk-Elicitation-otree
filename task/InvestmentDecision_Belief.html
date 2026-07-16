@@ -1,0 +1,297 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+{% block styles %}
+<style>
+.slider-container {
+    display: inline-block;
+}
+
+.circle {
+    width: 30px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 50%;
+    display: inline-block;
+    text-align: center;
+    line-height: 30px;
+}
+.sliderValue {
+    position: absolute;
+    top: -30px;
+    transform: translateX(-50%);
+}
+
+:root {
+  --slider-color: #d3d3d3; /* Default color */
+  --slider-thumb-color: #007BFF;
+  --slider-thumb-hover-color: #0056b3;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 0px;
+  border-radius: 50%;
+  background: var(--slider-color);
+  cursor: pointer;
+  position: relative;
+  margin-top: 0px;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 0px;
+  border-radius: 50%;
+  background: var(--slider-color);
+  cursor: pointer;
+  position: relative;
+  margin-top: 0px;
+}
+
+.slider.active::-webkit-slider-thumb {
+  height: 25px;
+}
+
+.slider.active::-moz-range-thumb {
+  height: 25px;
+}
+
+.slider.interacted:hover::-webkit-slider-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+  background: var(--slider-thumb-hover-color);
+   margin-top: -20px;
+}
+
+.slider.interacted:hover::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+  background: var(--slider-thumb-hover-color);
+   margin-top: -20px;
+}
+datalist {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.tickmarks {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+}
+
+.tickmarks span {
+    position: absolute;
+    bottom: -5px;
+    width: 1px; /* Tick width */
+    height: 5px; /* Tick height */
+    background-color: black; /* Tick color */
+    transform: translateX(-50%);
+}
+
+.tickmarks span:nth-child(1) {
+    left: 1%;
+}
+
+.tickmarks span:nth-child(2) {
+    left: 16.666%;
+}
+
+.tickmarks span:nth-child(3) {
+    left: 33.333%;
+}
+
+.tickmarks span:nth-child(4) {
+    left: 50%;
+}
+
+.tickmarks span:nth-child(5) {
+    left: 66.666%;
+}
+
+.tickmarks span:nth-child(6) {
+    left: 83.333%;
+}
+
+.tickmarks span:nth-child(7) {
+    left: 99%;
+}
+
+     .custom-border {
+        border-color: #d6d8db;
+    }
+      .radio-inline {
+        margin-right: 20px;
+        margin-left: 30px;
+    }
+
+ </style>
+{% endblock %}
+
+{% block title %}
+    Round {{ round_number }} (of {{ C.NUM_ROUNDS }}) - Choice
+{% endblock title %}
+
+{% block content %}
+<div class="container bg-light border custom-border" style="padding-left:30px; padding-right:30px">
+    <br>
+<p>
+    You can choose between Asset A and Asset B.
+</p>
+
+
+<div style="text-align: center;">
+<div class="alert alert-warning" role="alert" style="padding-left: 30px; padding-right: 30px; margin: auto; text-align: center; display: inline-block;">
+<div class="form-group">
+    <label class="col-form-label">Which asset do you want to choose?</label>
+    <div class="controls field-InvestmentAsset">
+        {% for choice in form.InvestmentAsset %}
+            <label class="radio-inline">
+                {{ choice }}
+                {{ choice.label }}
+            </label>
+        {% endfor %}
+    </div>
+</div>
+</div></div>
+<br>
+<div class="form-group">
+    <label class="col-form-label" style="margin-bottom: 10px;">How strong is your preference for your chosen asset?</label>
+    <div class="controls">
+            <input type="range" min="1" max="7" step="0.1" class="slider" id="id_InvestmentPreference_slide" name="InvestmentPreference" oninput="myFunction(this.value)" title="">
+             <div class="tickmarks">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+              <p style="position:relative; display:inline-block; width: 20%; text-align:center; left: -1%; margin-top: 20px;">Strong preference for Asset A</p>
+              <p style="position:relative; display:inline-block; width: 20%; text-align:center; margin-left: 20%; margin-top: 20px;">Indifferent between Assets A and B</p>
+              <p style="position:relative; display:inline-block; width: 20%; text-align:center; margin-left: 19%; margin-top: 20px;">Strong preference for Asset B</p>
+
+    </div>
+    <br>
+</div>
+
+
+    <div id="bb1" style='position: relative; left: 10px; top: 40px; right: 0px; padding-bottom: 75px; text-align: center; '>
+    <button id="b1" type="button" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000; display: block;" class="btn btn-primary" onclick="checkSubmit()" disabled>Next</button>
+
+</div>
+
+
+        <input type="hidden" name="InvestmentPreference" value="" id="id_InvestmentPreference"/>
+        <input type="hidden" name="PreferenceError" id="id_PreferenceError"/>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script>
+    function myFunction(value) {
+      document.documentElement.style.setProperty('--slider-color', '#007BFF');
+      document.getElementById('b1').disabled = false;
+
+      var slider = document.getElementById("id_InvestmentPreference_slide");
+      slider.classList.add('active');
+      slider.classList.add('interacted');
+      slider.title = value;
+    }
+
+    function skipPage() {
+        document.getElementById('id_InvestmentPreference_slide').value = '4';
+        document.getElementById('id_InvestmentAsset-0').checked = true;
+    }
+
+
+        $(':input').bind('input',function(){
+            var weightTemp = parseFloat(String($(':input[name=InvestmentPref_Expl]').val()));
+
+	        if (weightTemp > 10000 || weightTemp < 0){
+                window.alert("Please select a number between 0 and 10000!");
+            }
+        });
+
+         document.addEventListener('DOMContentLoaded', function() {
+        const slider = document.getElementById('id_InvestmentPreference_slide');
+        const hiddenInput = document.getElementById('id_InvestmentPreference');
+
+        slider.addEventListener('input', function() {
+            hiddenInput.value = slider.value;
+        });
+    });
+ window.onload = function() {
+        var textarea = document.getElementById("id_InvestmentPref_Expl");
+
+        // Add event listener for input
+        textarea.addEventListener("input", function() {
+            if (textarea.value.trim() === "") { // Check if input contains only spaces
+                textarea.setCustomValidity("Please enter your answer.");
+            } else {
+                textarea.setCustomValidity(""); // Clear any previous validation message
+            }
+        });
+        var nextButton = document.getElementById("b1");
+        nextButton.addEventListener("click", function() {
+                if (textarea.value.trim() === "") { // Check if textarea is empty
+                    textarea.setCustomValidity("Please enter your answer.");
+                } else {
+                    textarea.setCustomValidity("");
+                }
+            });
+
+    };
+    </script>
+
+    <script>
+        function checkSubmit() {
+            let form = document.getElementById('form');
+            let isValid = form.reportValidity();
+            if (!isValid) return;
+
+            let warnings = [];
+
+            let binary = forminputs.InvestmentAsset.value;
+            const slider = document.getElementById('id_InvestmentPreference_slide');
+            preference = slider.value;
+            if (binary === "0" && preference > "4") {
+                warnings.push(`You chose Asset A but did not indicate a preference for Asset A. Do you want to adjust your input?`);
+                document.getElementById('id_PreferenceError').value = 1;
+            }
+
+            if (binary === "1" && preference < "4") {
+                warnings.push(`You chose Asset B but did not indicate a preference for Asset B. Do you want to adjust your input?`);
+                document.getElementById('id_PreferenceError').value = 1;
+            }
+
+            if (warnings.length > 0) {
+                warnings.push("Press OK to proceed anyway.")
+                let confirmed = window.confirm(warnings.join('\r\n'));
+                if (!confirmed) return;
+            }
+
+            form.submit();
+        }
+    </script>
+{% endblock %}
