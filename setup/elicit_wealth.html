@@ -2,7 +2,7 @@
 {% load otree static %}
 
 {% block title %}
-    Introductory survey - 3 (of 3)
+    Introductory survey - Elicitation
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,16 @@
         {{ next_button }}
     </div>
 
+
+{% if testing %}
+    <button id="skipBtn" class="btn btn-secondary px-3" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+
 {{ endblock }}
+
+
+
 
 
 {{ block scripts }}
@@ -25,9 +34,6 @@
             document.getElementById('id_Demographics_LiquidWealth-3').checked = true;
             document.getElementById('id_Demographics_IlliquidWealth-3').checked = true;
             document.getElementById('id_Demographics_DebtWealth-3').checked = true;
-            document.getElementById('id_Demographics_LiquidityConstraints_1-3').checked = true;
-            document.getElementById('id_Demographics_LiquidityConstraints_2-3').checked = true;
-            document.getElementById('id_Demographics_LiquidityConstraints_3-3').checked = true;
         }
     </script>
 {{ endblock }}

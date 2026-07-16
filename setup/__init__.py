@@ -13,6 +13,10 @@ class C(BaseConstants):
     #attentionchecks
     SAMPLE_FRUITS = ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P']
     SAMPLE_IAMX = [1, 2, 3]
+    # elicit_wealth
+    CURRENCIES = {'AUD': 'A$', 'GBP': '£', 'EUR': '€', 'USD': '$'}
+    DEFAULT_CURRENCY = 'GBP'  # ADJUST THIS ONE
+    DEFAULT_CURRENCY_SYMBOL = CURRENCIES[DEFAULT_CURRENCY]
 
 
 class Subsession(BaseSubsession):
@@ -51,6 +55,94 @@ class Player(BasePlayer):
         choices=[[1, "Tatyana's mother"], [2, "Grandma"], [3, "Tatyana"]],
         widget=widgets.RadioSelect,
     )
+
+    # elicit_wealth
+    Demographics_Household_Income = models.IntegerField(
+        label='Which of the following best describes your total household income last year?',
+        widget=widgets.RadioSelect(),
+        choices=[
+            [0, f"{C.DEFAULT_CURRENCY_SYMBOL}0"],
+            [1, f"Less than {C.DEFAULT_CURRENCY_SYMBOL}10,000"],
+            [2, f"Between {C.DEFAULT_CURRENCY_SYMBOL}10,000 and {C.DEFAULT_CURRENCY_SYMBOL}20,000"],
+            [3, f"Between {C.DEFAULT_CURRENCY_SYMBOL}20,000 and {C.DEFAULT_CURRENCY_SYMBOL}40,000"],
+            [4, f"Between {C.DEFAULT_CURRENCY_SYMBOL}40,000 and {C.DEFAULT_CURRENCY_SYMBOL}80,000"],
+            [5, f"Between {C.DEFAULT_CURRENCY_SYMBOL}80,000 and {C.DEFAULT_CURRENCY_SYMBOL}160,000"],
+            [6, f"Between {C.DEFAULT_CURRENCY_SYMBOL}160,000 and {C.DEFAULT_CURRENCY_SYMBOL}320,000"],
+            [7, f"{C.DEFAULT_CURRENCY_SYMBOL}320,000 or more"],
+            [8, "Prefer not to say"]
+        ])
+
+    Demographics_LiquidWealth = models.IntegerField(
+        label='How much easily accessible savings do you own (e.g., money on bank accounts, investments in mutual funds or stocks, or other financial wealth)?',
+        widget=widgets.RadioSelect(),
+        choices=[
+            [0, f"{C.DEFAULT_CURRENCY_SYMBOL}0"],
+            [1, f"Less than {C.DEFAULT_CURRENCY_SYMBOL}5,000"],
+            [2, f"Between {C.DEFAULT_CURRENCY_SYMBOL}5,000 and {C.DEFAULT_CURRENCY_SYMBOL}10,000"],
+            [3, f"Between {C.DEFAULT_CURRENCY_SYMBOL}10,000 and {C.DEFAULT_CURRENCY_SYMBOL}15,000"],
+            [4, f"Between {C.DEFAULT_CURRENCY_SYMBOL}15,000 and {C.DEFAULT_CURRENCY_SYMBOL}20,000"],
+            [5, f"Between {C.DEFAULT_CURRENCY_SYMBOL}20,000 and {C.DEFAULT_CURRENCY_SYMBOL}25,000"],
+            [6, f"{C.DEFAULT_CURRENCY_SYMBOL}25,000 or more"],
+            [7, "Prefer not to say"]
+        ])
+
+    Demographics_IlliquidWealth = models.IntegerField(
+        label='How much other wealth do you own (e.g., value of your home, other real estate you own, or other non-financial assets)?',
+        widget=widgets.RadioSelect(),
+        choices=[
+            [0, f"{C.DEFAULT_CURRENCY_SYMBOL}0"],
+            [1, f"Less than {C.DEFAULT_CURRENCY_SYMBOL}20,000"],
+            [2, f"Between {C.DEFAULT_CURRENCY_SYMBOL}20,000 and {C.DEFAULT_CURRENCY_SYMBOL}40,000"],
+            [3, f"Between {C.DEFAULT_CURRENCY_SYMBOL}40,000 and {C.DEFAULT_CURRENCY_SYMBOL}80,000"],
+            [4, f"Between {C.DEFAULT_CURRENCY_SYMBOL}80,000 and {C.DEFAULT_CURRENCY_SYMBOL}160,000"],
+            [5, f"Between {C.DEFAULT_CURRENCY_SYMBOL}160,000 and {C.DEFAULT_CURRENCY_SYMBOL}320,000"],
+            [6, f"Between {C.DEFAULT_CURRENCY_SYMBOL}320,000 and {C.DEFAULT_CURRENCY_SYMBOL}640,000"],
+            [7, f"{C.DEFAULT_CURRENCY_SYMBOL}640,000 or more"],
+            [8, "Prefer not to say"]
+        ])
+
+    Demographics_DebtWealth = models.IntegerField(
+        label='How much debt do you owe (e.g., mortgages, credit card debt, or lines of credit)?',
+        widget=widgets.RadioSelect(),
+        choices=[
+            [0, f"{C.DEFAULT_CURRENCY_SYMBOL}0"],
+            [1, f"Less than {C.DEFAULT_CURRENCY_SYMBOL}20,000"],
+            [2, f"Between {C.DEFAULT_CURRENCY_SYMBOL}20,000 and {C.DEFAULT_CURRENCY_SYMBOL}40,000"],
+            [3, f"Between {C.DEFAULT_CURRENCY_SYMBOL}40,000 and {C.DEFAULT_CURRENCY_SYMBOL}80,000"],
+            [4, f"Between {C.DEFAULT_CURRENCY_SYMBOL}80,000 and {C.DEFAULT_CURRENCY_SYMBOL}160,000"],
+            [5, f"Between {C.DEFAULT_CURRENCY_SYMBOL}160,000 and {C.DEFAULT_CURRENCY_SYMBOL}320,000"],
+            [6, f"Between {C.DEFAULT_CURRENCY_SYMBOL}320,000 and {C.DEFAULT_CURRENCY_SYMBOL}640,000"],
+            [7, f"{C.DEFAULT_CURRENCY_SYMBOL}640,000 or more"],
+            [8, "Prefer not to say"]
+        ])
+
+
+#####!!!!
+    Demographics_LiquidityConstraints_1 = models.IntegerField(
+        label='Please assess the following statement: "I would be able to spend more today by using my disposable income."',
+        widget=widgets.RadioSelectHorizontal,
+        choices=[
+            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
+            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
+        ])
+
+    Demographics_LiquidityConstraints_2 = models.IntegerField(
+        label='Please assess the following statement: "I would be able to spend more today by using my net wealth (e.g., savings invested in bank accounts or stocks)."',
+        widget=widgets.RadioSelectHorizontal,
+        choices=[
+            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
+            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
+        ])
+
+    Demographics_LiquidityConstraints_3 = models.IntegerField(
+        label='Please assess the following statement: "I would be able to spend more today by borrowing money (e.g., using consumer credit).”',
+        widget=widgets.RadioSelectHorizontal,
+        choices=[
+            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
+            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
+        ])
+####!!!!
+
 
 # FUNCTIONS
 def creating_session(subsession):
@@ -104,6 +196,24 @@ def creating_session(subsession):
             player.participant.bonusperiod = random.randint(1, 5)
 
 # PAGES
+class Elicit_Wealth(Page):
+    form_model = 'player'
+    form_fields = [
+        "Demographics_Household_Income",
+        "Demographics_LiquidWealth",
+        "Demographics_IlliquidWealth",
+        "Demographics_DebtWealth"
+    ]
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'testing': player.session.config["testing"]}
+
+
 class Welcome(Page):
     form_model = "player"
     form_fields = ['isLeaving']
@@ -287,5 +397,6 @@ class Instructions(Page):
     def is_displayed(player: Player):
         return player.round_number == 1
 
-page_sequence = [Welcome, LeavePage, ProlificID, BotScreening, AttentionCheck1, AttentionCheck2, AttentionCheck3, AttentionCheck4, AttentionCheckResult, Instructions]
+page_sequence = [Welcome, LeavePage, ProlificID, BotScreening, AttentionCheck1, AttentionCheck2, AttentionCheck3, AttentionCheck4, AttentionCheckResult, Elicit_Wealth, Instructions]
 #page_sequence = [Welcome, LeavePage, ProlificID, Instructions]
+
