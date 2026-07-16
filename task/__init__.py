@@ -32,7 +32,8 @@ class Player(BasePlayer):
     )
 
     #captures time
-    sequentialTimeSpent = models.StringField() # Record time spent on each month in sequential in miliseconds
+    sequentialTimeSpent = models.StringField(blank=True) # Record time spent on each situation in sequential_joint, in milliseconds
+    timeToNewTooltip = models.StringField(blank=True) # Record time spent on each tooltip in simultaneous_joint, in milliseconds
 
     #investmentdecision
     InvestmentAsset = models.IntegerField(
@@ -103,29 +104,9 @@ class Start(Page):
         player.incentive = player.participant.incentive
         return player.round_number==1
 
-class Payoffs_Apart(Page):
-    form_model = "player"
-    form_fields = ['sequentialTimeSpent']
-
-    @staticmethod
-    def vars_for_template(player):
-        player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
-        arrayA=player.participant.payoffsA[player.round_number-1]
-        arrayB=player.participant.payoffsB[player.round_number-1]
-
-        return dict(
-            arrayA = arrayA,
-            arrayB = arrayB,
-            animation_time = 0,
-            max_value = 2.5,
-        )
-
-    def is_displayed(player):
-        return player.treatment == "apart"
-
 class Payoffs_Together(Page):
     form_model = "player"
-    form_fields = ['sequentialTimeSpent']
+    form_fields = ['sequentialTimeSpent', 'timeToNewTooltip']
 
     @staticmethod
     def vars_for_template(player):
@@ -139,9 +120,6 @@ class Payoffs_Together(Page):
             animation_time = 0,
             max_value = 2.5,
         )
-
-    def is_displayed(player):
-        return player.treatment == "together"
 
 class InvestmentDecision(Page):
     form_model = 'player'
@@ -275,4 +253,4 @@ class Final_Questions(Page):
 
 
 
-page_sequence = [Start, Payoffs_Apart, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions]
+page_sequence = [Start, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions]

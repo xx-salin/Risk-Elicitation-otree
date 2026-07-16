@@ -184,10 +184,12 @@ def creating_session(subsession):
             player.iamx1 = order_images[0]
             player.iamx2 = order_images[1]
             player.iamx3 = order_images[2]
+            # chart display treatment: sequential_joint reveals situations
+            # one at a time; simultaneous_joint shows all 11 at once.
             if player in players[:2]:
-                player.participant.treatment = "together"
+                player.participant.treatment = "sequential_joint"
             else:
-                player.participant.treatment = "apart"
+                player.participant.treatment = "simultaneous_joint"
             if player in players[:1] or player in players[2:3]:
                 player.participant.incentive = "beliefs"
             else:

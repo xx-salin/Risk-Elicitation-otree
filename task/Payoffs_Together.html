@@ -19,13 +19,22 @@
 
 
 {% block content %}
-<!--Include hidden field for time spent-->
+<!--Include hidden fields for time spent-->
 <input type="hidden" name="sequentialTimeSpent" id="sequentialTimeSpent"/>
+<input type="hidden" name="timeToNewTooltip" id="timeToNewTooltip"/>
 
 
 <div class="container bg-light border custom-border">
         <br>
+        {% if player.treatment == "sequential_joint" %}
         <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all 11 situations of Asset A and Asset B, respectively.</p>
+        {% else %}
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all 11 situations of Asset A and Asset B, respectively.
+            <br>
+            <b>Note:</b> The payoffs are ordered from low to high for each asset.
+            To see the corresponding situation and payoffs, hover over the respective bar.
+        </p>
+        {% endif %}
 
 
 
@@ -46,8 +55,12 @@
 <!--This is the next button -->
 <div id="bb1" style='position: relative; left: 35px; top: 0px; right: 0px; padding-bottom: 40px; text-align: center; '>
 
+    {% if player.treatment == "sequential_joint" %}
     <button type="button" class="btn btn-primary" id="updateChartButton" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" onclick="updateTimeSpent()">Next</button>
     <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000; display: none;" class="otree-btn-next btn btn-primary" onclick="updateTimeSpent()" disabled>Next</button>
+    {% else %}
+    <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" class="otree-btn-next btn btn-primary">Next</button>
+    {% endif %}
 
 </div>
 {% endblock %}
@@ -64,9 +77,14 @@
 
     <script>
         var animationtime = {{animation_time}};
+        {% if player.treatment == "sequential_joint" %}
         {% include "_static/Graph_Together_Sequential.js" %}
+        {% else %}
+        {% include "_static/Graph_Together_Simultan.js" %}
+        {% endif %}
     </script>
 
+    {% if player.treatment == "sequential_joint" %}
     <script>
         let timeSpent = [];
         let startTime = new Date().getTime();
@@ -82,5 +100,6 @@
 
 
     </script>
+    {% endif %}
 
 {{ endblock }}
