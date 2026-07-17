@@ -8,7 +8,8 @@ Your app description
 
 class C(BaseConstants):
     NAME_IN_URL = 'setup'
-    PLAYERS_PER_GROUP = 4
+    # 8 so that every cell of the 2x2x2 design (treatment x incentive x stakes) appears exactly once per group.
+    PLAYERS_PER_GROUP = 8
     NUM_ROUNDS = 1
     #attentionchecks
     SAMPLE_FRUITS = ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P']
@@ -17,6 +18,18 @@ class C(BaseConstants):
     CURRENCIES = {'AUD': 'A$', 'GBP': '£', 'EUR': '€', 'USD': '$'}
     DEFAULT_CURRENCY = 'GBP'  # ADJUST THIS ONE
     DEFAULT_CURRENCY_SYMBOL = CURRENCIES[DEFAULT_CURRENCY]
+
+    # Lower bound (in DEFAULT_CURRENCY units) of each choice index, per
+    # elicit_wealth question. Used to compute the high-stakes multiplier:
+    # multiplier = STAKES_FACTOR_F (settings.py) * this lower bound, for
+    # whichever field STAKES_SOURCE_FIELD (settings.py) names.
+    # "Prefer not to say" maps to 0 (no stakes boost).
+    WEALTH_LOWER_BOUNDS = {
+        "Demographics_Household_Income": {0: 0, 1: 0, 2: 10000, 3: 20000, 4: 40000, 5: 80000, 6: 160000, 7: 320000, 8: 0},
+        "Demographics_LiquidWealth":      {0: 0, 1: 0, 2: 5000, 3: 10000, 4: 15000, 5: 20000, 6: 25000, 7: 0},
+        "Demographics_IlliquidWealth":    {0: 0, 1: 0, 2: 20000, 3: 40000, 4: 80000, 5: 160000, 6: 320000, 7: 640000, 8: 0},
+        "Demographics_DebtWealth":        {0: 0, 1: 0, 2: 20000, 3: 40000, 4: 80000, 5: 160000, 6: 320000, 7: 640000, 8: 0},
+    }
 
 
 class Subsession(BaseSubsession):
@@ -184,16 +197,27 @@ def creating_session(subsession):
             player.iamx1 = order_images[0]
             player.iamx2 = order_images[1]
             player.iamx3 = order_images[2]
+            # 2x2x2 design, balanced once per group of 8:
             # chart display treatment: sequential_joint reveals situations
             # one at a time; simultaneous_joint shows all 11 at once.
-            if player in players[:2]:
+            if player in players[:4]:
                 player.participant.treatment = "sequential_joint"
             else:
                 player.participant.treatment = "simultaneous_joint"
-            if player in players[:1] or player in players[2:3]:
+            if (
+                player in players[:1] or player in players[2:3]
+                or player in players[4:5] or player in players[6:7]
+            ):
                 player.participant.incentive = "beliefs"
             else:
                 player.participant.incentive = "choice"
+# stakes: low keeps payoffs as generated above; high scales them by STAKES_FACTOR_F * (lower bound of the participant's answerto STAKES_SOURCE_FIELD on Elicit_Wealth). 
+# The multiplier itself is computed once that answer is known, in Elicit_Wealth.before_next_page below; default to 1 until then.
+            if player in players[:2] or player in players[4:6]:
+                player.participant.stakes = "low"
+            else:
+                player.participant.stakes = "high"
+            player.participant.stakes_multiplier = 1
             player.participant.belieftable = 1
             player.participant.bonusperiod = random.randint(1, 5)
 
@@ -214,6 +238,16 @@ class Elicit_Wealth(Page):
     @staticmethod
     def vars_for_template(player: Player):
         return {'testing': player.session.config["testing"]}
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        if player.participant.stakes == "high":
+            source_field = player.session.config["stakes_source_field"]
+            answer = getattr(player, source_field)
+            lower_bound = C.WEALTH_LOWER_BOUNDS[source_field].get(answer, 0)
+            player.participant.stakes_multiplier = player.session.config["stakes_factor_f"] * lower_bound
+        else:
+            player.participant.stakes_multiplier = 1
 
 
 class Welcome(Page):

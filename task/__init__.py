@@ -22,6 +22,7 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     treatment = models.StringField()
     incentive = models.StringField()
+    stakes = models.StringField()
 
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
@@ -52,13 +53,13 @@ class Player(BasePlayer):
     )
 
     #beliefs
+    # no max: at high stakes, payoffs (and so the correct guess) can exceed
+    # the low-stakes range of ~2.2, scaled by stakes_multiplier
     Average_Guess_Alt1 = models.FloatField(
         min=0,
-        max=2.2,
     )
     Average_Guess_Alt2 = models.FloatField(
         min=0,
-        max=2.2,
     )
     Prob_1_Guess_Alt1 = models.FloatField(
         min=0,
@@ -102,6 +103,7 @@ class Start(Page):
     def is_displayed(player):
         player.treatment = player.participant.treatment
         player.incentive = player.participant.incentive
+        player.stakes = player.participant.stakes
         return player.round_number==1
 
 
@@ -113,8 +115,9 @@ class Payoffs_Together(Page):
     @staticmethod
     def vars_for_template(player):
         player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
-        arrayA = player.participant.payoffsA[player.round_number-1]
-        arrayB = player.participant.payoffsB[player.round_number-1]
+        multiplier = player.participant.stakes_multiplier
+        arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
+        arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
 
         def fmt2(x):
             return f"{x:.2f}"
@@ -122,12 +125,17 @@ class Payoffs_Together(Page):
         def pct0(x):
             return f"{x:.0%}"
 
+        # thresholds scale with stakes so "below/above" stays meaningful
+        # regardless of the multiplier
+        below_threshold = 0.6 * multiplier
+        above_threshold = 1.4 * multiplier
+
         averageA = fmt2(sum(arrayA) / len(arrayA))
         averageB = fmt2(sum(arrayB) / len(arrayB))
-        belowA = pct0(sum(x < 0.6 for x in arrayA) / len(arrayA))
-        belowB = pct0(sum(x < 0.6 for x in arrayB) / len(arrayB))
-        aboveA = pct0(sum(x > 1.4 for x in arrayA) / len(arrayA))
-        aboveB = pct0(sum(x > 1.4 for x in arrayB) / len(arrayB))
+        belowA = pct0(sum(x < below_threshold for x in arrayA) / len(arrayA))
+        belowB = pct0(sum(x < below_threshold for x in arrayB) / len(arrayB))
+        aboveA = pct0(sum(x > above_threshold for x in arrayA) / len(arrayA))
+        aboveB = pct0(sum(x > above_threshold for x in arrayB) / len(arrayB))
         stdA = fmt2(math.sqrt(sum((x - (sum(arrayA) / len(arrayA))) ** 2 for x in arrayA) / len(arrayA)))
         stdB = fmt2(math.sqrt(sum((x - (sum(arrayB) / len(arrayB))) ** 2 for x in arrayB) / len(arrayB)))
 
@@ -135,7 +143,7 @@ class Payoffs_Together(Page):
             arrayA=arrayA,
             arrayB=arrayB,
             animation_time=0,
-            max_value=2.5,
+            max_value=2.5 * multiplier,
             averageA=averageA,
             averageB=averageB,
             belowA=belowA,
@@ -185,8 +193,11 @@ class Expectations(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
+        multiplier = player.participant.stakes_multiplier
         return dict(
             round_number = player.round_number,
+            average_guess_max = 2.2 * multiplier,
+            prob_threshold = f"{0.9 * multiplier:.2f}",
         )
 
     @staticmethod
@@ -202,7 +213,10 @@ class Expectations_Choice(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
+        multiplier = player.participant.stakes_multiplier
         return dict(
+            average_guess_max = 2.2 * multiplier,
+            prob_threshold = f"{0.9 * multiplier:.2f}",
             round_number = player.round_number,
         )
 
@@ -226,11 +240,14 @@ class NextRound(Page):
             if player.round_number == player.participant.bonusperiod:
                 random_choice = random.randint(1,5)
                 if random_choice == 1:  # Average_Guess_Alt1 chosen for payoff
-                    correct_value = sum(player.participant.payoffsA[player.round_number-1])/11
+                    # scale by stakes_multiplier: the guess was made against
+                    # the displayed (possibly scaled) chart, so the
+                    # correctness check must use the same scale
+                    correct_value = player.participant.stakes_multiplier * sum(player.participant.payoffsA[player.round_number-1])/11
                     if 0.95 * correct_value <= player.Average_Guess_Alt1 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 2:  # Average_Guess_Alt2 chosen for payoff
-                    correct_value = sum(player.participant.payoffsB[player.round_number-1])/11
+                    correct_value = player.participant.stakes_multiplier * sum(player.participant.payoffsB[player.round_number-1])/11
                     if 0.95 * correct_value <= player.Average_Guess_Alt2 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff

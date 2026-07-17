@@ -76,6 +76,11 @@ class completioncode(Page):
 
     @staticmethod
     def vars_for_template(player):
+        # Actual payment always uses the base (unscaled) amounts, regardless
+        # of stakes condition: the high-stakes multiplier only affects what
+        # is *displayed* to the participant during the task (the chart, the
+        # guess questions), not what they are actually paid. This keeps
+        # real payouts identical across stakes conditions.
         bonusamount = player.participant.Bonus*2
         if player.participant.BonusChoice == 0:
             payoffs = player.participant.payoffsA[player.participant.bonusperiod-1]

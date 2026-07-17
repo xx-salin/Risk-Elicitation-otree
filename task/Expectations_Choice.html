@@ -25,15 +25,15 @@
         <tbody>
                 <tr>
                 <td> Average Payoff </td>
-                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "0" max = "2.2" step = "any" required></td>
-                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "0" max = "2.2" step = "any" required></td>
+                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
+                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
                 </tr>
             </tbody>
     </table>
 <br>
 <br>
     <p>
-            Please guess the frequency (in %) at which each of the two alternatives has a payoff below 0.9:
+            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ prob_threshold }}:
     </p>
         <table id="table2" class="display" style="width:100%">
             <thead>
@@ -45,7 +45,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td> Payoff below 0.9 </td>
+                    <td> Payoff below {{ prob_threshold }} </td>
                     <td><input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     <td><input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     </tr>
