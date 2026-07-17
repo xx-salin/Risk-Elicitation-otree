@@ -33,7 +33,7 @@ class Player(BasePlayer):
 
     #captures time
     sequentialTimeSpent = models.StringField(blank=True) # Record time spent on each situation in sequential_joint, in milliseconds
-    timeToNewTooltip = models.StringField(blank=True) # Record time spent on each tooltip in simultaneous_joint, in milliseconds
+    simultaneousTimeSpent = models.StringField(blank=True) # Record time spent on each tooltip in simultaneous_joint, in milliseconds
 
     #investmentdecision
     InvestmentAsset = models.IntegerField(
@@ -104,21 +104,47 @@ class Start(Page):
         player.incentive = player.participant.incentive
         return player.round_number==1
 
+
+
 class Payoffs_Together(Page):
     form_model = "player"
-    form_fields = ['sequentialTimeSpent', 'timeToNewTooltip']
+    form_fields = ['sequentialTimeSpent', 'simultaneousTimeSpent']
 
     @staticmethod
     def vars_for_template(player):
         player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
-        arrayA=player.participant.payoffsA[player.round_number-1]
-        arrayB=player.participant.payoffsB[player.round_number-1]
+        arrayA = player.participant.payoffsA[player.round_number-1]
+        arrayB = player.participant.payoffsB[player.round_number-1]
+
+        def fmt2(x):
+            return f"{x:.2f}"
+
+        def pct0(x):
+            return f"{x:.0%}"
+
+        averageA = fmt2(sum(arrayA) / len(arrayA))
+        averageB = fmt2(sum(arrayB) / len(arrayB))
+        belowA = pct0(sum(x < 0.6 for x in arrayA) / len(arrayA))
+        belowB = pct0(sum(x < 0.6 for x in arrayB) / len(arrayB))
+        aboveA = pct0(sum(x > 1.4 for x in arrayA) / len(arrayA))
+        aboveB = pct0(sum(x > 1.4 for x in arrayB) / len(arrayB))
+        stdA = fmt2(math.sqrt(sum((x - (sum(arrayA) / len(arrayA))) ** 2 for x in arrayA) / len(arrayA)))
+        stdB = fmt2(math.sqrt(sum((x - (sum(arrayB) / len(arrayB))) ** 2 for x in arrayB) / len(arrayB)))
 
         return dict(
-            arrayA = arrayA,
-            arrayB = arrayB,
-            animation_time = 0,
-            max_value = 2.5,
+            arrayA=arrayA,
+            arrayB=arrayB,
+            animation_time=0,
+            max_value=2.5,
+            averageA=averageA,
+            averageB=averageB,
+            belowA=belowA,
+            belowB=belowB,
+            aboveA=aboveA,
+            aboveB=aboveB,
+            stdA=stdA,
+            stdB=stdB,
+            round_number=player.round_number,
         )
 
 class InvestmentDecision(Page):
