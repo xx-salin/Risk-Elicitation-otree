@@ -1,7 +1,5 @@
 from os import environ
 
-# Set to True to show a "Skip for testing" button on every page that
-# Set back to False before
 TESTING_MODE = True
 
 # High-stakes multiplier: for participants in the "high" stakes condition, payoffs are scaled by STAKES_FACTOR_F * (lower bound of their answer to STAKES_SOURCE_FIELD on the Elicit_Wealth page). 
@@ -12,6 +10,10 @@ TESTING_MODE = True
 # high-stakes multiplier settings
 STAKES_FACTOR_F = 2.0
 STAKES_SOURCE_FIELD = "Demographics_LiquidWealth"
+##
+
+
+
 
 SESSION_CONFIGS = [
      dict(

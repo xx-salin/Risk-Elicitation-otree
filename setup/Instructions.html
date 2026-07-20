@@ -65,10 +65,12 @@
         You will be informed about the selected guess and your exact payment at the end of the experiment.
         {{ endif }}
     </p>
+    {{ if player.participant.stakes == "high" and player.participant.incentive == "choice" }}
     <p>
-        Note: the payoffs shown to you during the task may be displayed at a larger scale than usual for some participants.
-        This does not affect your actual payment: your bonus is always calculated and paid out using the same base £ amounts, regardless of the scale shown to you.
+        Note: The payoffs shown to you have been scaled up by a fixed factor.
+        Your actual bonus payment is calculated by dividing the outcome you see by this same factor, so you are paid the unscaled amount.
     </p>
+    {{ endif }}
     <br>
     {{ if player.participant.incentive == "choice" }}
     <p>
