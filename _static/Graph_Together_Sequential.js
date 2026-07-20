@@ -121,7 +121,7 @@ function createChart() {
                     return '£' + this.value.toFixed(2);
                 }
             },
-            min: 0,
+            min: -yMax,
             max: yMax,
             tickInterval: yTickInterval,
             plotLines: [{

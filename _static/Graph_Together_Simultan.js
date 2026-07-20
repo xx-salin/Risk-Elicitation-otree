@@ -102,7 +102,7 @@ $(function () {
                     return this.value;
                 }
             },
-            min: 0,
+            min: -yMax,
             max: yMax,
             tickInterval: yTickInterval,
             plotLines: [{
