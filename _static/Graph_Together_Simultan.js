@@ -24,6 +24,18 @@
         var maxValue = {{ max_value }}; // Get maximum value for the player
         var minValue = - maxValue;
 
+        // Round a value up to N significant figures, e.g. roundUpToSigFigs(18.5, 2) -> 19.
+        function roundUpToSigFigs(value, sigFigs) {
+            if (!value) return 0;
+            var magnitude = Math.pow(10, sigFigs - Math.ceil(Math.log10(Math.abs(value))));
+            return Math.ceil(value * magnitude) / magnitude;
+        }
+
+        // Always show 5 evenly spaced, 2-sig-fig tick marks above zero,
+        // regardless of the stakes multiplier (F*X) baked into maxValue.
+        var yTickInterval = maxValue > 0 ? roundUpToSigFigs(maxValue / 5, 2) : 1;
+        var yMax = yTickInterval * 5;
+
         var absMaxFund = Math.max(...DataFund.map(Math.abs)); // Get absolute maximum from DataFund
         var absMaxBenchmark = Math.max(...DataBenchmark.map(Math.abs)); // Get absolute maximum from DataBenchmark
 
@@ -37,7 +49,6 @@ $(function () {
             backgroundColor: '#f8f9fa',
             type: 'column',
             height: 400,
-            marginLeft: 70,
             marginRight: 30,
             marginBottom: 100,
             marginf: 55,
@@ -92,8 +103,8 @@ $(function () {
                 }
             },
             min: 0,
-            max: maxValue,
-            tickInterval: 0.5,
+            max: yMax,
+            tickInterval: yTickInterval,
             plotLines: [{
                 color: 'black',
                 width: 1,

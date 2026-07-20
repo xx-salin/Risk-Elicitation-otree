@@ -9,8 +9,8 @@ TESTING_MODE = True
 # Change STAKES_SOURCE_FIELD to any of: "Demographics_Household_Income", "Demographics_LiquidWealth", "Demographics_IlliquidWealth", "Demographics_DebtWealth"
 # (see setup/__init__.py's C.WEALTH_LOWER_BOUNDS for the bracket->lower bound mapping used for each).
 
-
-STAKES_FACTOR_F = 2
+# high-stakes multiplier settings
+STAKES_FACTOR_F = 2.0
 STAKES_SOURCE_FIELD = "Demographics_LiquidWealth"
 
 SESSION_CONFIGS = [
@@ -31,7 +31,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     stakes_source_field=STAKES_SOURCE_FIELD,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "attention_check_number"]
 SESSION_FIELDS = []
 
 # ISO-639 code
