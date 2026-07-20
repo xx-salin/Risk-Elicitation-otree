@@ -88,7 +88,13 @@ class completioncode(Page):
         else:
             payoffs = player.participant.payoffsB[player.participant.bonusperiod-1]
             asset = "Asset B"
-        payoff = payoffs[player.participant.random_draw]
+        # Add the initial-wealth offset (see setup/Instructions.html) so a loss
+        # situation never results in a negative bonus payment. This offset is
+        # deliberately stakes-independent: for the "high" stakes group the
+        # displayed outcome and displayed wealth are both scaled up by the same
+        # multiplier and then that multiplier is divided back out, so the real
+        # payment here works out the same as for the "low" stakes group.
+        payoff = payoffs[player.participant.random_draw] + player.participant.wealth_W
         return dict(
             bonusamount=f"{bonusamount:.2f}",
             bonus_period=player.participant.bonusperiod,

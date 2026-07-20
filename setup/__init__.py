@@ -235,12 +235,20 @@ def creating_session(subsession):
                 j = j + 1
             payoffsA.append(helpA)
             payoffsB.append(helpB)
+        # "Initial wealth" offset added to bonus payoffs so a participant can
+        # never be paid a negative bonus, even though situation payoffs can
+        # include losses. Computed from the specific distributions drawn for
+        # this group's 10 rounds (payoffsA/payoffsB above), so it reflects only
+        # the worst payoff this group could actually be paid out.
+        drawn_payoffs = [v for lst in payoffsA + payoffsB for v in lst]
+        wealth_W = max(0, -min(drawn_payoffs))
         players = group.get_players()
         for player in players:
             player.participant.tuplesorder = tuples_order
             player.participant.frequentbetterA = frequentbetterA
             player.participant.payoffsA = payoffsA
             player.participant.payoffsB = payoffsB
+            player.participant.wealth_W = wealth_W
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             order_images = C.SAMPLE_IAMX.copy()
             random.shuffle(order_images)
@@ -479,6 +487,17 @@ class Instructions(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        # Wealth is expressed on the same scale as the outcomes the participant
+        # sees (i.e. scaled by the same stakes multiplier), so "wealth + outcome"
+        # is a same-units sum for both stakes groups.
+        multiplier = player.participant.stakes_multiplier
+        return dict(
+            wealth_W=f"{player.participant.wealth_W * multiplier:.2f}",
+            stakes_factor=f"{multiplier:.2f}",
+        )
 
 page_sequence = [Welcome, LeavePage, ProlificID, BotScreening, AttentionCheck1, AttentionCheck2, AttentionCheck3, AttentionCheck4, AttentionCheckResult, Elicit_Wealth, Instructions]
 #page_sequence = [Welcome, LeavePage, ProlificID, Instructions]

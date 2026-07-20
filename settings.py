@@ -39,7 +39,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     num_situations=NUM_SITUATIONS,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "attention_check_number"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "attention_check_number", "wealth_W"]
 SESSION_FIELDS = []
 
 # ISO-639 code
