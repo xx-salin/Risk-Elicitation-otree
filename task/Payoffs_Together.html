@@ -27,9 +27,9 @@
 <div class="container bg-light border custom-border">
         <br>
         {% if player.treatment == "sequential_joint" %}
-        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all 11 situations of Asset A and Asset B, respectively.</p>
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.</p>
         {% else %}
-        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all 11 situations of Asset A and Asset B, respectively.
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.
             <br>
             <b>Note:</b> The payoffs are ordered from low to high for each asset.
             To see the corresponding situation and payoffs, hover over the respective bar.

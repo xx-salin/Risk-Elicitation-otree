@@ -36,7 +36,7 @@
 
 
 var myChart; // Global variable to store the chart instance
-var situations = ['Situation 1', 'Situation 2', 'Situation 3', 'Situation 4', 'Situation 5', 'Situation 6', 'Situation 7', 'Situation 8', 'Situation 9', 'Situation 10', 'Situation 11'];
+var situations = DataFund.map((_, i) => 'Situation ' + (i + 1)); // one label per actual situation, however many there are
 var currentMonth = 0; // Initialize the current month index
 
 // Update chart data function

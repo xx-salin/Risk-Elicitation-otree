@@ -1,9 +1,15 @@
 from otree.api import *
 import random
+from pathlib import Path
+from openpyxl import load_workbook
+from task import C as TaskC  # for TaskC.NUM_ROUNDS: the task app's round count
 
 doc = """
 Your app description
 """
+
+# Distributions.xlsx lives at the project root (one level up from this app).
+DISTRIBUTIONS_FILE = Path(__file__).resolve().parent.parent / "Distributions.xlsx"
 
 
 class C(BaseConstants):
@@ -158,20 +164,64 @@ class Player(BasePlayer):
 
 
 # FUNCTIONS
+
+# ============================================================================
+# SPOT 1: to change the outcome pairs for a situation, just edit the numbers
+# directly in Distributions.xlsx (sheet "All", the block of rows under the
+# 'D1', 'D2', ... header - NOT the lower "Situation" block, which is just an
+# illustrative shuffle). Each distribution Dn is 2 columns wide; each row is
+# one situation's [option_1, option_2] payoff pair. To add/remove an entire
+# distribution, add/remove a 'Dn' column pair. No code changes needed.
+# ============================================================================
+def load_distributions(num_situations):
+    """
+    Read every distribution (D1, D2, ...) from Distributions.xlsx's "All" sheet.
+    Returns a list of distributions, each a list of `num_situations`
+    [option_1, option_2] pairs.
+    """
+    wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
+    ws = wb["All"]
+    rows = list(ws.iter_rows(values_only=True))
+    header = rows[1]  # e.g. (None, 'D1', None, 'D2', None, 'D3', ...)
+    data_rows = rows[2 : 2 + num_situations]  # first `num_situations` situation rows
+
+    distributions = []
+    col = 1
+    while col < len(header) and header[col] is not None:
+        pairs = [[row[col], row[col + 1]] for row in data_rows]
+        if len(pairs) < num_situations or any(a is None or b is None for a, b in pairs):
+            raise ValueError(
+                f"Distributions.xlsx column '{header[col]}' on the 'All' sheet "
+                f"doesn't have {num_situations} filled-in situation rows (NUM_SITUATIONS "
+                f"in settings.py). Add more rows to the sheet or lower NUM_SITUATIONS."
+            )
+        distributions.append(pairs)
+        col += 2
+    return distributions
+
+
 def creating_session(subsession):
+    # ========================================================================
+    # SPOT 2: to change the number of situations per round, edit NUM_SITUATIONS
+    # in settings.py. It automatically updates: how many rows are read per
+    # distribution above, every "N possible situations" mention shown to
+    # participants (task app templates), and the belief-guess accuracy checks
+    # (task/__init__.py). Distributions.xlsx must have at least that many rows
+    # per distribution.
+    # ========================================================================
+    num_situations = subsession.session.config["num_situations"]
+    # D1-D5 are the Volatility-sheet distributions (alternating high/low
+    # volatility), D6-D10 the Skewness-sheet ones (alternating positive/
+    # negative skew) - see load_distributions() / SPOT 1 above to edit them.
+    tuples_variations = load_distributions(num_situations)
     for group in subsession.get_groups():
-        tuples_variations = [[[0.0, 0.2], [0.2, 0.4], [0.4, 0.6], [0.6, 0.8], [0.8, 1.0], [1.0, 1.2], [1.2, 1.4], [1.4, 1.6],[1.6, 1.8], [1.8, 2.0], [2, 0]],
-                  [[0.0, 0.15], [0.2, 0.35], [0.4, 0.55], [0.6, 0.75], [0.8, 0.95], [1.0, 1.15], [1.2, 1.35], [1.4, 1.55], [1.6, 1.75], [1.8, 1.95], [2, 0]],
-                  [[0.0, 0.25], [0.2, 0.45], [0.4, 0.65], [0.6, 0.85], [0.8, 1.05], [1.0, 1.25], [1.2, 1.45], [1.4, 1.65], [1.6, 1.85], [1.8, 2.05], [2, 0]],
-                  [[0.0, 0.15], [0.25, 0.35], [0.45, 0.55], [0.65, 0.75], [0.85, 1.0], [1.0, 1.25], [1.15, 1.45], [1.35, 1.65], [1.55, 1.85], [1.75, 2.0], [2, 0]],
-                  [[0.0, 0.25], [0.15, 0.45], [0.35, 0.65], [0.55, 0.85], [0.75, 1.0], [1.0, 1.15], [1.25, 1.35], [1.45, 1.55], [1.65, 1.75], [1.85, 2.0], [2, 0]]
-                  ]
-        tuples_order = [0,1,2,3,4] #0: equalmargins, 1: FO_FOSDominated, 2: FOSDominates, 3: FO_MoreRisky, 4: FO_LessRisky
-        random.shuffle(tuples_order)
+        # one distribution per round, drawn without replacement from all
+        # available distributions (there must be at least C.NUM_ROUNDS of them)
+        tuples_order = random.sample(range(len(tuples_variations)), TaskC.NUM_ROUNDS)
         frequentbetterA = []
         payoffsA = []
         payoffsB = []
-        for i in range(5):
+        for i in range(TaskC.NUM_ROUNDS):
             helpA = []
             helpB = []
             AorB = random.choice([0, 1])
@@ -179,7 +229,7 @@ def creating_session(subsession):
             tuples = tuples_variations[tuples_order[i]]
             random.shuffle(tuples)
             j = 0
-            while j < 11:
+            while j < num_situations:
                 helpA.append(tuples[j][AorB])
                 helpB.append(tuples[j][1 - AorB])
                 j = j + 1
@@ -199,7 +249,7 @@ def creating_session(subsession):
             player.iamx3 = order_images[2]
             # 2x2x2 design, balanced once per group of 8:
             # chart display treatment: sequential_joint reveals situations
-            # one at a time; simultaneous_joint shows all 11 at once.
+            # one at a time; simultaneous_joint shows all situations at once.
             if player in players[:4]:
                 player.participant.treatment = "sequential_joint"
             else:
@@ -219,7 +269,7 @@ def creating_session(subsession):
                 player.participant.stakes = "high"
             player.participant.stakes_multiplier = 1
             player.participant.belieftable = 1
-            player.participant.bonusperiod = random.randint(1, 5)
+            player.participant.bonusperiod = random.randint(1, 10)
             # only one of AttentionCheck1-4 is shown per participant
             player.participant.attention_check_number = random.randint(1, 4)
 

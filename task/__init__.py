@@ -8,7 +8,7 @@ doc = """ Public Learning """
 class C(BaseConstants):
     NAME_IN_URL = 'task'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 5
+    NUM_ROUNDS = 10
 
 
 class Subsession(BaseSubsession):
@@ -100,6 +100,12 @@ class Start(Page):
     form_model = "player"
 
     @staticmethod
+    def vars_for_template(player):
+        return dict(
+            num_situations=player.session.config["num_situations"],
+        )
+
+    @staticmethod
     def is_displayed(player):
         player.treatment = player.participant.treatment
         player.incentive = player.participant.incentive
@@ -153,6 +159,7 @@ class Payoffs_Together(Page):
             stdA=stdA,
             stdB=stdB,
             round_number=player.round_number,
+            num_situations=player.session.config["num_situations"],
         )
 
 class InvestmentDecision(Page):
@@ -232,6 +239,7 @@ class NextRound(Page):
     def vars_for_template(player):
         return dict(
             next_round=player.round_number+1,
+            num_situations=player.session.config["num_situations"],
         )
 
     def is_displayed(player):
@@ -239,28 +247,33 @@ class NextRound(Page):
         if player.incentive == "beliefs":
             if player.round_number == player.participant.bonusperiod:
                 random_choice = random.randint(1,5)
+                payoffsA_this_round = player.participant.payoffsA[player.round_number - 1]
+                payoffsB_this_round = player.participant.payoffsB[player.round_number - 1]
                 if random_choice == 1:  # Average_Guess_Alt1 chosen for payoff
                     # scale by stakes_multiplier: the guess was made against
                     # the displayed (possibly scaled) chart, so the
                     # correctness check must use the same scale
-                    correct_value = player.participant.stakes_multiplier * sum(player.participant.payoffsA[player.round_number-1])/11
+                    correct_value = player.participant.stakes_multiplier * sum(payoffsA_this_round) / len(payoffsA_this_round)
                     if 0.95 * correct_value <= player.Average_Guess_Alt1 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 2:  # Average_Guess_Alt2 chosen for payoff
-                    correct_value = player.participant.stakes_multiplier * sum(player.participant.payoffsB[player.round_number-1])/11
+                    correct_value = player.participant.stakes_multiplier * sum(payoffsB_this_round) / len(payoffsB_this_round)
                     if 0.95 * correct_value <= player.Average_Guess_Alt2 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff
-                    correct_value = (5 / 11) * 100
+                    # the threshold (0.9) matches prob_threshold = 0.9 * multiplier
+                    # shown on the Expectations page; multiplier cancels out since
+                    # payoffsA_this_round is unscaled
+                    correct_value = 100 * sum(x < 0.9 for x in payoffsA_this_round) / len(payoffsA_this_round)
                     if 0.95 * correct_value <= player.Prob_1_Guess_Alt1 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 4:  # Prob_1_Guess_Alt2 chosen for payoff
-                    correct_value = (5 / 11) * 100
+                    correct_value = 100 * sum(x < 0.9 for x in payoffsB_this_round) / len(payoffsB_this_round)
                     if 0.95 * correct_value <= player.Prob_1_Guess_Alt2 <= 1.05 * correct_value:
                         player.Bonus = 1
                 if random_choice == 5:  # Volatility chosen for payoff
-                    stdA = math.sqrt(sum((x - sum(player.participant.payoffsA[player.round_number - 1])/11) ** 2 for x in player.participant.payoffsA[player.round_number - 1]) / len(player.participant.payoffsA[player.round_number - 1]))
-                    stdB = math.sqrt(sum((x - sum(player.participant.payoffsB[player.round_number - 1])/11) ** 2 for x in player.participant.payoffsB[player.round_number - 1]) / len(player.participant.payoffsB[player.round_number - 1]))
+                    stdA = math.sqrt(sum((x - sum(payoffsA_this_round) / len(payoffsA_this_round)) ** 2 for x in payoffsA_this_round) / len(payoffsA_this_round))
+                    stdB = math.sqrt(sum((x - sum(payoffsB_this_round) / len(payoffsB_this_round)) ** 2 for x in payoffsB_this_round) / len(payoffsB_this_round))
                     if stdA == stdB:
                         if player.Volatility == 2:
                             player.Bonus = 1

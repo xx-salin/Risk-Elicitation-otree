@@ -12,6 +12,11 @@ STAKES_FACTOR_F = 2.0
 STAKES_SOURCE_FIELD = "Demographics_LiquidWealth"
 ##
 
+# Number of possible payoff situations per round
+# This single value controls: how many rows are read per distribution from Distributions.xlsx (setup/__init__.py), the "N possible situations" wording shown to participants (task app templates), and the denominators used when checking belief-guess accuracy (task/__init__.py).
+# Distributions.xlsx must have at least this many situation rows for every distribution column (D1, D2, ...) on its "All" sheet.
+NUM_SITUATIONS = 11
+
 
 
 
@@ -31,6 +36,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     testing=TESTING_MODE,
     stakes_factor_f=STAKES_FACTOR_F,
     stakes_source_field=STAKES_SOURCE_FIELD,
+    num_situations=NUM_SITUATIONS,
 )
 
 PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "attention_check_number"]
