@@ -56,7 +56,7 @@ class Player(BasePlayer):
     # min=None: otree defaults a numeric field's min to 0 unless told
     # otherwise, which would silently reject negative guesses. Payoffs (and
     # so the correct guess) can be negative and, at high stakes, can exceed
-    # the low-stakes range of +/-2.5, scaled by stakes_multiplier. Bounds are
+    # the low-stakes range of +/-2.2, scaled by stakes_multiplier. Bounds are
     # enforced dynamically per player - see Expectations.error_message /
     # Expectations_Choice.error_message below.
     Average_Guess_Alt1 = models.FloatField(min=None)
@@ -149,7 +149,7 @@ class Payoffs_Together(Page):
             arrayA=arrayA,
             arrayB=arrayB,
             animation_time=0,
-            max_value=2.5 * multiplier,
+            max_value=2.2 * multiplier,
             averageA=averageA,
             averageB=averageB,
             belowA=belowA,
@@ -203,15 +203,15 @@ class Expectations(Page):
         multiplier = player.participant.stakes_multiplier
         return dict(
             round_number = player.round_number,
-            average_guess_min = f"{-2.5 * multiplier:.2f}",
-            average_guess_max = f"{2.5 * multiplier:.2f}",
-            prob_threshold = f"{0.9 * multiplier:.2f}",
+            average_guess_min = f"{-2.2 * multiplier:.2f}",
+            average_guess_max = f"{2.2 * multiplier:.2f}",
+            freq_thres_l = f"{player.session.config['freq_thres_l'] * multiplier:.2f}",
         )
 
     @staticmethod
     def error_message(player: Player, values):
         multiplier = player.participant.stakes_multiplier
-        guess_min, guess_max = -2.5 * multiplier, 2.5 * multiplier
+        guess_min, guess_max = -2.2 * multiplier, 2.2 * multiplier
         for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
             if not (guess_min <= values[field] <= guess_max):
                 return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
@@ -231,16 +231,16 @@ class Expectations_Choice(Page):
     def vars_for_template(player: Player):
         multiplier = player.participant.stakes_multiplier
         return dict(
-            average_guess_min = f"{-2.5 * multiplier:.2f}",
-            average_guess_max = f"{2.5 * multiplier:.2f}",
-            prob_threshold = f"{0.9 * multiplier:.2f}",
+            average_guess_min = f"{-2.2 * multiplier:.2f}",
+            average_guess_max = f"{2.2 * multiplier:.2f}",
+            freq_thres_l = f"{player.session.config['freq_thres_l'] * multiplier:.2f}",
             round_number = player.round_number,
         )
 
     @staticmethod
     def error_message(player: Player, values):
         multiplier = player.participant.stakes_multiplier
-        guess_min, guess_max = -2.5 * multiplier, 2.5 * multiplier
+        guess_min, guess_max = -2.2 * multiplier, 2.2 * multiplier
         for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
             if not (guess_min <= values[field] <= guess_max):
                 return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
@@ -267,31 +267,35 @@ class NextRound(Page):
                 random_choice = random.randint(1,5)
                 payoffsA_this_round = player.participant.payoffsA[player.round_number - 1]
                 payoffsB_this_round = player.participant.payoffsB[player.round_number - 1]
+                # +/-GUESS_TOLERANCE (settings.py) band around the correct answer
+                tol = player.session.config["guess_tolerance"]
                 if random_choice == 1:  # Average_Guess_Alt1 chosen for payoff
                     # scale by stakes_multiplier: the guess was made against
                     # the displayed (possibly scaled) chart, so the
                     # correctness check must use the same scale
                     correct_value = player.participant.stakes_multiplier * sum(payoffsA_this_round) / len(payoffsA_this_round)
-                    # correct_value can now be negative (losses), so the +/-5%
-                    # tolerance band must be sorted rather than assumed low-to-high
-                    lo, hi = sorted([0.95 * correct_value, 1.05 * correct_value])
+                    # correct_value can now be negative (losses), so the tolerance
+                    # band must be sorted rather than assumed low-to-high
+                    lo, hi = sorted([(1 - tol) * correct_value, (1 + tol) * correct_value])
                     if lo <= player.Average_Guess_Alt1 <= hi:
                         player.Bonus = 1
                 if random_choice == 2:  # Average_Guess_Alt2 chosen for payoff
                     correct_value = player.participant.stakes_multiplier * sum(payoffsB_this_round) / len(payoffsB_this_round)
-                    lo, hi = sorted([0.95 * correct_value, 1.05 * correct_value])
+                    lo, hi = sorted([(1 - tol) * correct_value, (1 + tol) * correct_value])
                     if lo <= player.Average_Guess_Alt2 <= hi:
                         player.Bonus = 1
                 if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff
-                    # the threshold (0.9) matches prob_threshold = 0.9 * multiplier
-                    # shown on the Expectations page; multiplier cancels out since
-                    # payoffsA_this_round is unscaled
-                    correct_value = 100 * sum(x < 0.9 for x in payoffsA_this_round) / len(payoffsA_this_round)
-                    if 0.95 * correct_value <= player.Prob_1_Guess_Alt1 <= 1.05 * correct_value:
+                    # threshold matches freq_thres_l = FREQ_THRES_L (settings.py) *
+                    # multiplier shown on the Expectations page; multiplier cancels out
+                    # here since payoffsA_this_round is unscaled
+                    freq_thres_l = player.session.config["freq_thres_l"]
+                    correct_value = 100 * sum(x < freq_thres_l for x in payoffsA_this_round) / len(payoffsA_this_round)
+                    if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt1 <= (1 + tol) * correct_value:
                         player.Bonus = 1
                 if random_choice == 4:  # Prob_1_Guess_Alt2 chosen for payoff
-                    correct_value = 100 * sum(x < 0.9 for x in payoffsB_this_round) / len(payoffsB_this_round)
-                    if 0.95 * correct_value <= player.Prob_1_Guess_Alt2 <= 1.05 * correct_value:
+                    freq_thres_l = player.session.config["freq_thres_l"]
+                    correct_value = 100 * sum(x < freq_thres_l for x in payoffsB_this_round) / len(payoffsB_this_round)
+                    if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt2 <= (1 + tol) * correct_value:
                         player.Bonus = 1
                 if random_choice == 5:  # Volatility chosen for payoff
                     stdA = math.sqrt(sum((x - sum(payoffsA_this_round) / len(payoffsA_this_round)) ** 2 for x in payoffsA_this_round) / len(payoffsA_this_round))

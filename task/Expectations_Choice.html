@@ -44,7 +44,7 @@
             </table>
             <br><br>
             <p>
-                Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ prob_threshold }}:
+                Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ freq_thres_l }}:
             </p>
             <table id="table2" class="display" style="width:100%">
                 <thead>
@@ -56,7 +56,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Payoff below {{ prob_threshold }}</td>
+                        <td>Payoff below {{ freq_thres_l }}</td>
                         <td>
                             <input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class="form-control"
                                    min="0" max="100" step="any" required>
