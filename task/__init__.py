@@ -131,10 +131,10 @@ class Payoffs_Together(Page):
         def pct0(x):
             return f"{x:.0%}"
 
-        # thresholds scale with stakes so "below/above" stays meaningful
-        # regardless of the multiplier
-        below_threshold = 0.6 * multiplier
-        above_threshold = 1.4 * multiplier
+        # TAIL_THRES_L/H (settings.py) - thresholds scale with stakes so
+        # "below/above" stays meaningful regardless of the multiplier
+        below_threshold = player.session.config["tail_thres_l"] * multiplier
+        above_threshold = player.session.config["tail_thres_h"] * multiplier
 
         averageA = fmt2(sum(arrayA) / len(arrayA))
         averageB = fmt2(sum(arrayB) / len(arrayB))
@@ -156,6 +156,8 @@ class Payoffs_Together(Page):
             belowB=belowB,
             aboveA=aboveA,
             aboveB=aboveB,
+            below_threshold=fmt2(below_threshold),
+            above_threshold=fmt2(above_threshold),
             stdA=stdA,
             stdB=stdB,
             round_number=player.round_number,

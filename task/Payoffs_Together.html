@@ -53,8 +53,9 @@
     <div id='contr2' style='width: 100%; height: 100%; position: relative; z-index: 2000;'></div>
 </div>
 
-{#
-Summary statistics table (simultaneous condition only) - disabled for now.
+
+
+<!-- Summary statistics table (simultaneous condition only) - disabled for now. -->
 
 {% if player.treatment != "sequential_joint" %}
 <!-- Summary statistics table (simultaneous condition only) -->
@@ -81,12 +82,12 @@ Summary statistics table (simultaneous condition only) - disabled for now.
                     <td>£{{ stdB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs below £0.60:</th>
+                    <th style="text-align: left;">Frequency of payoffs below £{{ below_threshold }}:</th>
                     <td>{{ belowA }}</td>
                     <td>{{ belowB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs above £1.40:</th>
+                    <th style="text-align: left;">Frequency of payoffs above £{{ above_threshold }}:</th>
                     <td>{{ aboveA }}</td>
                     <td>{{ aboveB }}</td>
                 </tr>
@@ -95,7 +96,6 @@ Summary statistics table (simultaneous condition only) - disabled for now.
     </div>
 </div>
 {% endif %}
-#}
 
 
 <!--This is the next button -->
