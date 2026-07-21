@@ -210,36 +210,37 @@ def creating_session(subsession):
     # per distribution.
     # ========================================================================
     num_situations = subsession.session.config["num_situations"]
-    # D1-D5 are the Volatility-sheet distributions (alternating high/low
-    # volatility), D6-D10 the Skewness-sheet ones (alternating positive/
-    # negative skew) - see load_distributions() / SPOT 1 above to edit them.
+    # D1-D5 are the Volatility-sheet distributions (alternating high/low volatility), D6-D10 the Skewness-sheet ones (alternating positive/negative skew) - see load_distributions() / SPOT 1 above to edit them.
     tuples_variations = load_distributions(num_situations)
     for group in subsession.get_groups():
-        # one distribution per round, drawn without replacement from all
-        # available distributions (there must be at least C.NUM_ROUNDS of them)
+        # one distribution per round, drawn without replacement from all available distributions (there must be at least C.NUM_ROUNDS of them)
         tuples_order = random.sample(range(len(tuples_variations)), TaskC.NUM_ROUNDS)
         frequentbetterA = []
         payoffsA = []
         payoffsB = []
+        # For each round, the order in which the N situations end up displayed(1-indexed, matching their row order in Distributions.xlsx). 
+        # Recorded per round for sequential treatment
+        situation_order = []
         for i in range(TaskC.NUM_ROUNDS):
             helpA = []
             helpB = []
             AorB = random.choice([0, 1])
             frequentbetterA.append(AorB)
-            tuples = tuples_variations[tuples_order[i]]
-            random.shuffle(tuples)
+
+            tuples = list(tuples_variations[tuples_order[i]])
+            paired = list(enumerate(tuples, start=1))
+            random.shuffle(paired)
+            order_this_round = [situation_id for situation_id, _ in paired]
+            situation_order.append(order_this_round)
             j = 0
             while j < num_situations:
-                helpA.append(tuples[j][AorB])
-                helpB.append(tuples[j][1 - AorB])
+                pair = paired[j][1]
+                helpA.append(pair[AorB])
+                helpB.append(pair[1 - AorB])
                 j = j + 1
             payoffsA.append(helpA)
             payoffsB.append(helpB)
-        # "Initial wealth" offset added to bonus payoffs so a participant can
-        # never be paid a negative bonus, even though situation payoffs can
-        # include losses. Computed from the specific distributions drawn for
-        # this group's 10 rounds (payoffsA/payoffsB above), so it reflects only
-        # the worst payoff this group could actually be paid out.
+        # "Initial wealth" offset added to bonus payoffs
         drawn_payoffs = [v for lst in payoffsA + payoffsB for v in lst]
         wealth_W = max(0, -min(drawn_payoffs))
         players = group.get_players()
@@ -248,6 +249,7 @@ def creating_session(subsession):
             player.participant.frequentbetterA = frequentbetterA
             player.participant.payoffsA = payoffsA
             player.participant.payoffsB = payoffsB
+            player.participant.situation_order = situation_order
             player.participant.wealth_W = wealth_W
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             order_images = C.SAMPLE_IAMX.copy()
@@ -255,9 +257,8 @@ def creating_session(subsession):
             player.iamx1 = order_images[0]
             player.iamx2 = order_images[1]
             player.iamx3 = order_images[2]
-            # 2x2x2 design, balanced once per group of 8:
-            # chart display treatment: sequential_joint reveals situations
-            # one at a time; simultaneous_joint shows all situations at once.
+# 2x2x2 design, balanced once per group of 8:
+# chart display treatment: sequential_joint reveals situations one at a time; simultaneous_joint shows all situations at once.
             if player in players[:4]:
                 player.participant.treatment = "sequential_joint"
             else:
@@ -269,8 +270,7 @@ def creating_session(subsession):
                 player.participant.incentive = "beliefs"
             else:
                 player.participant.incentive = "choice"
-# stakes: low keeps payoffs as generated above; high scales them by STAKES_FACTOR_F * (lower bound of the participant's answerto STAKES_SOURCE_FIELD on Elicit_Wealth). 
-# The multiplier itself is computed once that answer is known, in Elicit_Wealth.before_next_page below; default to 1 until then.
+# stakes: low keeps payoffs as generated above; high scales them by STAKES_FACTOR_F * (lower bound of the participant's answerto STAKES_SOURCE_FIELD on Elicit_Wealth). The multiplier itself is computed once that answer is known, in Elicit_Wealth.before_next_page below; default to 1 until then.
             if player in players[:2] or player in players[4:6]:
                 player.participant.stakes = "low"
             else:

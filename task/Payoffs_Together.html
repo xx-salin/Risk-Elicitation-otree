@@ -21,6 +21,7 @@
 {% block content %}
 <!--Include hidden fields for time spent-->
 <input type="hidden" name="sequentialTimeSpent" id="sequentialTimeSpent"/>
+<input type="hidden" name="simultaneousTimeSpent" id="simultaneousTimeSpent"/>
 <input type="hidden" name="timeToNewTooltip" id="timeToNewTooltip"/>
 
 
@@ -105,7 +106,7 @@
     <button type="button" class="btn btn-primary" id="updateChartButton" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" onclick="updateTimeSpent()">Next</button>
     <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000; display: none;" class="otree-btn-next btn btn-primary" onclick="updateTimeSpent()" disabled>Next</button>
     {% else %}
-    <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" class="otree-btn-next btn btn-primary">Next</button>
+    <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" class="otree-btn-next btn btn-primary" onclick="recordSimultaneousTimeSpent()">Next</button>
     {% endif %}
 
 </div>
@@ -145,6 +146,16 @@
         }
 
 
+    </script>
+    {% else %}
+    <script>
+        // total time (ms) spent viewing the single graph, from page load until
+        // clicking Next - the simultaneous-treatment equivalent of sequentialTimeSpent
+        let simultaneousStartTime = new Date().getTime();
+
+        function recordSimultaneousTimeSpent() {
+            document.getElementById('simultaneousTimeSpent').value = new Date().getTime() - simultaneousStartTime;
+        }
     </script>
     {% endif %}
 

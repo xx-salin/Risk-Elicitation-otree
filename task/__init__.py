@@ -26,6 +26,11 @@ class Player(BasePlayer):
 
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
+    # order (1-indexed, matching Distributions.xlsx row order) in which this round's
+    # N situations were displayed - comma-separated since a list can't be stored
+    # directly. Copied per round from participant.situation_order (setup/__init__.py)
+    # so it shows up as a column in this app's own CSV export.
+    situation_order = models.StringField()
 
     # bonus
     Bonus = models.IntegerField(
@@ -121,6 +126,7 @@ class Payoffs_Together(Page):
     @staticmethod
     def vars_for_template(player):
         player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
+        player.situation_order = ','.join(str(s) for s in player.participant.situation_order[player.round_number-1])
         multiplier = player.participant.stakes_multiplier
         arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
         arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]

@@ -71,7 +71,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     tail_thres_h=TAIL_THRES_H,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "attention_check_number", "wealth_W"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order", "attention_check_number", "wealth_W"]
 SESSION_FIELDS = []
 
 # ISO-639 code
