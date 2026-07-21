@@ -280,6 +280,8 @@ def creating_session(subsession):
             player.participant.bonusperiod = random.randint(1, 10)
             # only one of AttentionCheck1-4 is shown per participant
             player.participant.attention_check_number = random.randint(1, 4)
+            # independent per-participant coin flip (not part of the 2x2x2 design above): 0 = payoff bars are color-coded red/green for loss/gain,1 = bars keep their current neutral per-asset color.
+            player.participant.color_treatment = random.randint(0, 1)
 
 # PAGES
 class Elicit_Wealth(Page):

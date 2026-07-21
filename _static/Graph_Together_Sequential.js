@@ -33,7 +33,17 @@
         var dynamicMaxValue = Math.max(absMaxFund, absMaxBenchmark); // Choose the larger of the two
         var dynamicMinValue = -dynamicMaxValue; // Symmetric minimum value
 
+        // colorTreatment (set in Payoffs_Together.html): 0 = color-code bars
+        // red/green for loss/gain, 1 = keep the series' own neutral color.
+        var lossGainZones = colorTreatment === 0
+            ? [{ value: 0, color: '#dc2626' }, { color: '#16a34a' }]
+            : undefined;
 
+        // When bars are loss/gain colored, the fill no longer identifies the
+        // asset, so add a thick per-asset outline instead (A = blue, B = black).
+        var assetABorderColor = colorTreatment === 0 ? '#00BFFF' : 'transparent';
+        var assetBBorderColor = colorTreatment === 0 ? '#000000' : 'transparent';
+        var assetBorderWidth = colorTreatment === 0 ? 3 : 0;
 
 var myChart; // Global variable to store the chart instance
 var situations = DataFund.map((_, i) => 'Situation ' + (i + 1)); // one label per actual situation, however many there are
@@ -213,6 +223,10 @@ function createChart() {
             name: 'Asset A',
             data: chartFund,
             color: '#00BFFF',
+            zones: lossGainZones,
+            zoneAxis: 'y',
+            borderColor: assetABorderColor,
+            borderWidth: assetBorderWidth,
             pointPlacement: 'on',
             clip: false,
             zIndex: 1,
@@ -224,6 +238,10 @@ function createChart() {
             name: 'Asset B',
             data: chartBenchmark,
             color: '#808080',
+            zones: lossGainZones,
+            zoneAxis: 'y',
+            borderColor: assetBBorderColor,
+            borderWidth: assetBorderWidth,
             pointPlacement: 'on',
             clip: false,
             zIndex: 0,

@@ -23,6 +23,10 @@ class Player(BasePlayer):
     treatment = models.StringField()
     incentive = models.StringField()
     stakes = models.StringField()
+    # 0 = payoff bars are color-coded red/green for loss/gain, 1 = bars keep
+    # their current neutral per-asset color. Randomized once per participant
+    # in setup/__init__.py; copied here per round for the CSV export.
+    color_treatment = models.IntegerField()
 
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
@@ -127,6 +131,7 @@ class Payoffs_Together(Page):
     def vars_for_template(player):
         player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
         player.situation_order = ','.join(str(s) for s in player.participant.situation_order[player.round_number-1])
+        player.color_treatment = player.participant.color_treatment
         multiplier = player.participant.stakes_multiplier
         arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
         arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
@@ -166,6 +171,7 @@ class Payoffs_Together(Page):
             above_threshold=fmt2(above_threshold),
             stdA=stdA,
             stdB=stdB,
+            color_treatment=player.color_treatment,
             round_number=player.round_number,
             num_situations=player.session.config["num_situations"],
         )
