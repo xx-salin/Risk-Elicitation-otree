@@ -29,8 +29,8 @@
         <tbody>
                 <tr>
                 <td> Average Payoff </td>
-                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
-                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
+                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "{{ average_guess_min }}" max = "{{ average_guess_max }}" step = "any" required oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')" oninput="this.setCustomValidity('')"></td>
+                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "{{ average_guess_min }}" max = "{{ average_guess_max }}" step = "any" required oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')" oninput="this.setCustomValidity('')"></td>
                 </tr>
             </tbody>
     </table>

@@ -11,60 +11,80 @@
     Please guess the average payoff for each of the two assets:
 </p>
 
-<form class = "otree-form" method = "post" role = "form" id = "form" autocomplete = "off">
-    <div class = "_otree-content">
-<div class="form-group">
-    <table id="table1" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Payoff</th>
-                <th>Asset A</th>
-                <th>Asset B</th>
-            </tr>
-        </thead>
-        <tbody>
-                <tr>
-                <td> Average Payoff </td>
-                <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
-                <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "0" max = "{{ average_guess_max }}" step = "any" required></td>
-                </tr>
-            </tbody>
-    </table>
-<br>
-<br>
-    <p>
-            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ prob_threshold }}:
-    </p>
-        <table id="table2" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Payoff</th>
-                    <th>Asset A</th>
-                    <th>Asset B</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td> Payoff below {{ prob_threshold }} </td>
-                    <td><input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
-                    <td><input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
+<form class="otree-form" method="post" role="form" id="form" autocomplete="off">
+    <div class="_otree-content">
+        <div class="form-group">
+            <table id="table1" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Payoff</th>
+                        <th>Asset A</th>
+                        <th>Asset B</th>
                     </tr>
-                    </tbody>
-        </table>
-        </div>
-        </div>
-        </form>
-    <br>
-    <br>
-    <p>
-            Please answer the following additional question regarding the assets' payoffs:
-    </p>
-        {{ formfield "Volatility" }}
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Average Payoff</td>
+                        <td>
+                            <input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class="form-control"
+                                   min="{{ average_guess_min }}" max="{{ average_guess_max }}" step="any" required
+                                   oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')"
+                                   oninput="this.setCustomValidity('')">
+                            {{ formfield_errors 'Average_Guess_Alt1' }}
+                        </td>
+                        <td>
+                            <input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class="form-control"
+                                   min="{{ average_guess_min }}" max="{{ average_guess_max }}" step="any" required
+                                   oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')"
+                                   oninput="this.setCustomValidity('')">
+                            {{ formfield_errors 'Average_Guess_Alt2' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br><br>
+            <p>
+                Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ prob_threshold }}:
+            </p>
+            <table id="table2" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Payoff</th>
+                        <th>Asset A</th>
+                        <th>Asset B</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Payoff below {{ prob_threshold }}</td>
+                        <td>
+                            <input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class="form-control"
+                                   min="0" max="100" step="any" required>
+                            {{ formfield_errors 'Prob_1_Guess_Alt1' }}
+                        </td>
+                        <td>
+                            <input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class="form-control"
+                                   min="0" max="100" step="any" required>
+                            {{ formfield_errors 'Prob_1_Guess_Alt2' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
-<br>
-    <p>
-    <button id = "button" class="otree-btn-next btn btn-primary" >Next</button>
-    </p>
+            <br><br>
+            <p>
+                Please answer the following additional question regarding the assets' payoffs:
+            </p>
+            {{ formfield "Volatility" }}
+
+            <br>
+            <p>
+                <button id="button" class="otree-btn-next btn btn-primary">Next</button>
+            </p>
+        </div>
+    </div>
+</form>
+
 {% endblock %}
 {% block scripts %}
 

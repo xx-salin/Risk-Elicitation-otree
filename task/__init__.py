@@ -53,14 +53,14 @@ class Player(BasePlayer):
     )
 
     #beliefs
-    # no max: at high stakes, payoffs (and so the correct guess) can exceed
-    # the low-stakes range of ~2.2, scaled by stakes_multiplier
-    Average_Guess_Alt1 = models.FloatField(
-        min=0,
-    )
-    Average_Guess_Alt2 = models.FloatField(
-        min=0,
-    )
+    # min=None: otree defaults a numeric field's min to 0 unless told
+    # otherwise, which would silently reject negative guesses. Payoffs (and
+    # so the correct guess) can be negative and, at high stakes, can exceed
+    # the low-stakes range of +/-2.5, scaled by stakes_multiplier. Bounds are
+    # enforced dynamically per player - see Expectations.error_message /
+    # Expectations_Choice.error_message below.
+    Average_Guess_Alt1 = models.FloatField(min=None)
+    Average_Guess_Alt2 = models.FloatField(min=None)
     Prob_1_Guess_Alt1 = models.FloatField(
         min=0,
         max=100
@@ -203,9 +203,18 @@ class Expectations(Page):
         multiplier = player.participant.stakes_multiplier
         return dict(
             round_number = player.round_number,
-            average_guess_max = 2.2 * multiplier,
+            average_guess_min = f"{-2.5 * multiplier:.2f}",
+            average_guess_max = f"{2.5 * multiplier:.2f}",
             prob_threshold = f"{0.9 * multiplier:.2f}",
         )
+
+    @staticmethod
+    def error_message(player: Player, values):
+        multiplier = player.participant.stakes_multiplier
+        guess_min, guess_max = -2.5 * multiplier, 2.5 * multiplier
+        for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
+            if not (guess_min <= values[field] <= guess_max):
+                return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
 
     @staticmethod
     def is_displayed(player: Player):
@@ -222,10 +231,19 @@ class Expectations_Choice(Page):
     def vars_for_template(player: Player):
         multiplier = player.participant.stakes_multiplier
         return dict(
-            average_guess_max = 2.2 * multiplier,
+            average_guess_min = f"{-2.5 * multiplier:.2f}",
+            average_guess_max = f"{2.5 * multiplier:.2f}",
             prob_threshold = f"{0.9 * multiplier:.2f}",
             round_number = player.round_number,
         )
+
+    @staticmethod
+    def error_message(player: Player, values):
+        multiplier = player.participant.stakes_multiplier
+        guess_min, guess_max = -2.5 * multiplier, 2.5 * multiplier
+        for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
+            if not (guess_min <= values[field] <= guess_max):
+                return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
 
     @staticmethod
     def is_displayed(player: Player):
@@ -254,11 +272,15 @@ class NextRound(Page):
                     # the displayed (possibly scaled) chart, so the
                     # correctness check must use the same scale
                     correct_value = player.participant.stakes_multiplier * sum(payoffsA_this_round) / len(payoffsA_this_round)
-                    if 0.95 * correct_value <= player.Average_Guess_Alt1 <= 1.05 * correct_value:
+                    # correct_value can now be negative (losses), so the +/-5%
+                    # tolerance band must be sorted rather than assumed low-to-high
+                    lo, hi = sorted([0.95 * correct_value, 1.05 * correct_value])
+                    if lo <= player.Average_Guess_Alt1 <= hi:
                         player.Bonus = 1
                 if random_choice == 2:  # Average_Guess_Alt2 chosen for payoff
                     correct_value = player.participant.stakes_multiplier * sum(payoffsB_this_round) / len(payoffsB_this_round)
-                    if 0.95 * correct_value <= player.Average_Guess_Alt2 <= 1.05 * correct_value:
+                    lo, hi = sorted([0.95 * correct_value, 1.05 * correct_value])
+                    if lo <= player.Average_Guess_Alt2 <= hi:
                         player.Bonus = 1
                 if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff
                     # the threshold (0.9) matches prob_threshold = 0.9 * multiplier
