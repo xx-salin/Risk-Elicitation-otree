@@ -5,7 +5,7 @@
 {{ block content }}
 
 <p>
-    Your total bonus payment is made up of two separate parts, described below.
+    Your total bonus payment is made up of four separate parts, described below.
 </p>
 
 <div class="card mb-3">
@@ -47,10 +47,41 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-header"><b>3. BRET bonus</b></div>
+    <div class="card-body">
+        <p>
+            {{ if bret_bomb_hit }}
+                In the bomb risk task, you collected {{ bret_boxes_collected }} boxes before stopping, and the bomb
+                was among them, so this task pays £0.00.
+            {{ else }}
+                In the bomb risk task, you collected {{ bret_boxes_collected }} boxes before stopping and avoided the
+                bomb, earning £{{ bret_box_value }} for each box collected.
+            {{ endif }}
+        </p>
+        <p class="mb-0">
+            BRET bonus: <b>£{{ bret_bonus }}</b>
+        </p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><b>4. Eckel-Grossman bonus</b></div>
+    <div class="card-body">
+        <p>
+            You chose Option {{ eg_lottery_choice }} in the Eckel-Grossman task, and the computer's random draw
+            resulted in the {{ eg_outcome_to_pay }} payoff for that option.
+        </p>
+        <p class="mb-0">
+            Eckel-Grossman bonus: <b>£{{ eg_bonus }}</b>
+        </p>
+    </div>
+</div>
+
 <div class="alert alert-primary">
     <p class="mb-0">
         <b>Total bonus payment: £{{ total_bonus }}</b>
-        (£{{ task_bonus }} task bonus + £{{ hl_bonus }} Holt-Laury bonus)
+        (£{{ task_bonus }} task bonus + £{{ hl_bonus }} Holt-Laury + £{{ bret_bonus }} BRET + £{{ eg_bonus }} Eckel-Grossman)
     </p>
 </div>
 

@@ -21,6 +21,18 @@ class C(BaseConstants):
     BRET_NUM_BOXES = 50
     BRET_BOX_VALUE = 0.04
 
+    # Eckel & Grossman (2002) single choice list: one choice among EG_NUM_LOTTERIES
+    # paired lotteries, each paying a "low" or "high" amount with 50/50 probability.
+    # Expected value and spread both increase monotonically down the list, from a
+    # risk-free option (lottery 1: low == high) to the riskiest. Reimplemented from
+    # scl-master's config.py (num_lotteries=5, risk_loving=False), rescaled to this
+    # study's £ stakes.
+    EG_NUM_LOTTERIES = 5
+    EG_SURE_PAYOFF = 1.00
+    EG_DELTA_LO = 0.25
+    EG_DELTA_HI = 0.50
+    EG_PROBABILITY_HIGH = 0.5
+
 class Subsession(BaseSubsession):
     pass
 
@@ -100,6 +112,13 @@ class Player(BasePlayer):
     bret_bomb_index = models.IntegerField(blank=True)
     bret_bomb_hit = models.BooleanField(blank=True)
     bret_payoff = models.FloatField(blank=True)
+
+    # Eckel-Grossman: index (1..EG_NUM_LOTTERIES) of the single lottery chosen.
+    eg_lottery_choice = models.IntegerField(min=1, max=C.EG_NUM_LOTTERIES, label='')
+    eg_outcome_lo = models.FloatField(blank=True)
+    eg_outcome_hi = models.FloatField(blank=True)
+    eg_outcome_to_pay = models.StringField(blank=True)
+    eg_payoff = models.FloatField(blank=True)
 
 
 def classify_hl_risk(num_safe_choices):
@@ -212,6 +231,36 @@ class BRET(Page):
             player.bret_payoff = player.bret_boxes_collected * C.BRET_BOX_VALUE
 
 
+class EckelGrossman(Page):
+    form_model = "player"
+    form_fields = ['eg_lottery_choice']
+
+    @staticmethod
+    def vars_for_template(player):
+        lotteries = []
+        for j in range(C.EG_NUM_LOTTERIES):
+            lo = C.EG_SURE_PAYOFF - C.EG_DELTA_LO * j
+            hi = C.EG_SURE_PAYOFF + C.EG_DELTA_HI * j
+            lotteries.append(dict(index=j + 1, lo=f"{lo:.2f}", hi=f"{hi:.2f}"))
+        return dict(
+            lotteries=lotteries,
+            prob_lo=f"{1 - C.EG_PROBABILITY_HIGH:.0%}",
+            prob_hi=f"{C.EG_PROBABILITY_HIGH:.0%}",
+        )
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        j = player.eg_lottery_choice - 1
+        lo = C.EG_SURE_PAYOFF - C.EG_DELTA_LO * j
+        hi = C.EG_SURE_PAYOFF + C.EG_DELTA_HI * j
+        outcome_to_pay = 'high' if random.random() < C.EG_PROBABILITY_HIGH else 'low'
+
+        player.eg_outcome_lo = lo
+        player.eg_outcome_hi = hi
+        player.eg_outcome_to_pay = outcome_to_pay
+        player.eg_payoff = hi if outcome_to_pay == 'high' else lo
+
+
 class completioncode(Page):
     form_model = "player"
 
@@ -242,8 +291,9 @@ class completioncode(Page):
             task_bonus = payoffs[player.participant.random_draw] + player.participant.wealth_W
 
         # Total = task-app bonus (belief accuracy or investment choice, depending
-        # on the incentive condition) + the separately-drawn Holt-Laury bonus.
-        total_bonus = task_bonus + player.hl_payoff
+        # on the incentive condition) + the separately-drawn Holt-Laury, BRET, and
+        # Eckel-Grossman bonuses.
+        total_bonus = task_bonus + player.hl_payoff + player.bret_payoff + player.eg_payoff
 
         return dict(
             incentive=incentive,
@@ -253,8 +303,15 @@ class completioncode(Page):
             hl_index_to_pay=player.hl_index_to_pay,
             hl_option_chosen=player.hl_option_chosen,
             hl_bonus=f"{player.hl_payoff:.2f}",
+            bret_boxes_collected=player.bret_boxes_collected,
+            bret_bomb_hit=player.bret_bomb_hit,
+            bret_box_value=f"{C.BRET_BOX_VALUE:.2f}",
+            bret_bonus=f"{player.bret_payoff:.2f}",
+            eg_lottery_choice=player.eg_lottery_choice,
+            eg_outcome_to_pay=player.eg_outcome_to_pay,
+            eg_bonus=f"{player.eg_payoff:.2f}",
             total_bonus=f"{total_bonus:.2f}",
         )
 
-page_sequence = [demographics, HoltLaury, BRET, completioncode]
+page_sequence = [demographics, HoltLaury, BRET, EckelGrossman, completioncode]
 

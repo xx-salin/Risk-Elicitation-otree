@@ -1,0 +1,69 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Risk Preferences (Eckel-Grossman)
+{% endblock %}
+
+{% block content %}
+
+<p>
+    Please choose <b>one</b> of the {{ lotteries|length }} options below. Each option pays either a "low" or a
+    "high" amount: there is a {{ prob_lo }} chance of the low payoff and a {{ prob_hi }} chance of the high payoff.
+</p>
+<p>
+    As you move down the list, both payoffs move further apart. Later options are riskier, but also have a
+    higher expected (average) payoff.
+</p>
+<p>
+    You will receive an <b>additional bonus payment</b> based on the option you choose below.
+</p>
+<p>
+    There are no right or wrong answers, please choose the option you honestly prefer.
+</p>
+
+<div class="table-responsive">
+    <table class="table table-bordered align-middle text-center">
+        <thead>
+            <tr>
+                <th rowspan="2">Option</th>
+                <th colspan="2">Low payoff</th>
+                <th colspan="2">High payoff</th>
+                <th rowspan="2">Your choice</th>
+            </tr>
+            <tr>
+                <th>Chance</th>
+                <th>Amount</th>
+                <th>Chance</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lot in lotteries %}
+            <tr>
+                <td>{{ lot.index }}</td>
+                <td>{{ prob_lo }}</td>
+                <td>&pound;{{ lot.lo }}</td>
+                <td>{{ prob_hi }}</td>
+                <td>&pound;{{ lot.hi }}</td>
+                <td><input type="radio" name="eg_lottery_choice" value="{{ lot.index }}" required></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="d-grid gap-2 mt-4">
+    <button class="btn btn-primary otree-btn-next">Continue</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+        var radios = document.querySelectorAll('input[name="eg_lottery_choice"]');
+        if (radios.length) radios[0].checked = true;
+    }
+</script>
+{% endblock %}
