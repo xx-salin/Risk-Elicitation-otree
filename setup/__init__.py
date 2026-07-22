@@ -432,8 +432,6 @@ def creating_session(subsession):
             player.participant.stakes_multiplier = 1
             player.participant.belieftable = 1
             player.participant.bonusperiod = random.randint(1, 10)
-            # only one of AttentionCheck1-4 is shown per participant
-            player.participant.attention_check_number = random.randint(1, 4)
             # independent per-participant coin flip (not part of the 2x2x2 design above): 0 = payoff bars are color-coded red/green for loss/gain,1 = bars keep their current neutral per-asset color.
             player.participant.color_treatment = random.randint(0, 1)
 
@@ -515,11 +513,10 @@ class AttentionCheck1(Page):
             player.attention1 = 1
         else:
             player.attention1 = 0
-        player.checks = player.attention1
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == 1 and player.participant.attention_check_number == 1
+        return player.round_number == 1
 
 class AttentionCheck2(Page):
     form_model = 'player'
@@ -583,11 +580,10 @@ class AttentionCheck2(Page):
             player.attention2 = 1
         else:
             player.attention2 = 0
-        player.checks = player.attention2
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == 1 and player.participant.attention_check_number == 2
+        return player.round_number == 1
 
 class AttentionCheck3(Page):
     form_model = 'player'
@@ -595,7 +591,7 @@ class AttentionCheck3(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == 1 and player.participant.attention_check_number == 3
+        return player.round_number == 1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -610,7 +606,6 @@ class AttentionCheck3(Page):
             player.attention3 = 1
         else:
             player.attention3 = 0
-        player.checks = player.attention3
 
 
 class AttentionCheck4(Page):
@@ -619,7 +614,7 @@ class AttentionCheck4(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == 1 and player.participant.attention_check_number == 4
+        return player.round_number == 1
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
@@ -627,7 +622,6 @@ class AttentionCheck4(Page):
             player.attention4 = 1
         else:
             player.attention4 = 0
-        player.checks = player.attention4
 
 
 class AttentionCheckResult(Page):
@@ -635,6 +629,15 @@ class AttentionCheckResult(Page):
 
     @staticmethod
     def is_displayed(player: Player):
+        # All 4 checks are now shown to every participant (not just one), so
+        # passing requires getting all 4 right, not just whichever one used to
+        # be randomly assigned.
+        player.checks = int(
+            player.attention1 == 1
+            and player.attention2 == 1
+            and player.attention3 == 1
+            and player.attention4 == 1
+        )
         return player.round_number == 1
 
 class Instructions(Page):

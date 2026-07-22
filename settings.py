@@ -56,7 +56,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     guess_tolerance=GUESS_TOLERANCE,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "freq_thres_l", "freq_thres_h", "tail_thres_l", "tail_thres_h", "attention_check_number", "wealth_W", "color_treatment"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "freq_thres_l", "freq_thres_h", "tail_thres_l", "tail_thres_h", "wealth_W", "color_treatment"]
 SESSION_FIELDS = []
 
 # ISO-639 code
