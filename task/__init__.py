@@ -31,10 +31,20 @@ class Player(BasePlayer):
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
     # order (1-indexed, matching Distributions.xlsx row order) in which this round's
-    # N situations were displayed - comma-separated since a list can't be stored
-    # directly. Copied per round from participant.situation_order (setup/__init__.py)
-    # so it shows up as a column in this app's own CSV export.
-    situation_order = models.StringField()
+    # N situations' Option A / Option B outcomes were drawn - comma-separated since
+    # a list can't be stored directly. Under dependence_variation "1" the two
+    # differ (each alternative shuffled independently); under "2.1"/"2.2" they're
+    # identical (the pairing is locked - see setup/__init__.py's creating_session).
+    # Copied per round from participant.situation_order_a/_b (setup/__init__.py)
+    # so they show up as columns in this app's own CSV export.
+    situation_order_a = models.StringField()
+    situation_order_b = models.StringField()
+    # "1" = this round's outcomes were independently shuffled per alternative
+    # (structure of dependence broken up); "2.1"/"2.2" = one of the two fixed
+    # pairings from Distributions.xlsx (structure of dependence preserved).
+    # Drawn per round in setup/__init__.py's creating_session with 50%/25%/25%
+    # probability; copied here per round for the CSV export.
+    dependence_variation = models.StringField()
 
     # bonus
     Bonus = models.IntegerField(
@@ -130,7 +140,9 @@ class Payoffs_Together(Page):
     @staticmethod
     def vars_for_template(player):
         player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
-        player.situation_order = ','.join(str(s) for s in player.participant.situation_order[player.round_number-1])
+        player.situation_order_a = ','.join(str(s) for s in player.participant.situation_order_a[player.round_number-1])
+        player.situation_order_b = ','.join(str(s) for s in player.participant.situation_order_b[player.round_number-1])
+        player.dependence_variation = player.participant.dependence_variation[player.round_number-1]
         player.color_treatment = player.participant.color_treatment
         multiplier = player.participant.stakes_multiplier
         arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]

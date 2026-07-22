@@ -166,24 +166,38 @@ class Player(BasePlayer):
 # FUNCTIONS
 
 # ============================================================================
-# SPOT 1: to change the outcome pairs for a situation, just edit the numbers
-# directly in Distributions.xlsx (sheet "All", the block of rows under the
-# 'D1', 'D2', ... header - NOT the lower "Situation" block, which is just an
-# illustrative shuffle). Each distribution Dn is 2 columns wide; each row is
-# one situation's [option_1, option_2] payoff pair. To add/remove an entire
-# distribution, add/remove a 'Dn' column pair. No code changes needed.
+# SPOT 1: to change the marginal outcomes for a distribution, just edit the
+# numbers directly in Distributions.xlsx (sheet "All", the block of rows
+# under the 'D1', 'D2', ... header). Each distribution Dn is 2 columns wide;
+# each row gives one [option_1, option_2] pair as it appears in the source
+# sheet. To add/remove an entire distribution, add/remove a 'Dn' column pair.
+# No code changes needed.
+#
+# NOTE: this original row-pairing is only ONE of three ways a round's
+# situations get built - see creating_session() below and the "All" sheet's
+# "Variation 1" / "Variation 2.1" / "Variation 2.2" blocks:
+#   - "Variation 1" (50% of rounds): option_1 and option_2 are independently
+#     shuffled across situations, breaking the row pairing. This is the
+#     SORTBY(..., RANDARRAY(...)) demo in "Variation 1"'s columns (press F9
+#     there to preview it) - not read by this app; creating_session()
+#     reimplements the same logic in Python so it can be re-rolled once per
+#     participant block at session start (see SPOT 2).
+#   - "Variation 2.1" / "Variation 2.2" (25% of rounds each): two OTHER fixed
+#     [option_1, option_2] pairings (different from the original row-pairing
+#     above, and from each other) - only the situation order is randomized,
+#     the pairing itself stays "locked". Unlike Variation 1, these ARE read
+#     directly from the sheet (see load_locked_distributions() below), since
+#     they're a fixed structure rather than something to re-roll live.
 # ============================================================================
-def load_distributions(num_situations):
+def _load_outcome_table(ws, header_row, num_situations):
     """
-    Read every distribution (D1, D2, ...) from Distributions.xlsx's "All" sheet.
-    Returns a list of distributions, each a list of `num_situations`
-    [option_1, option_2] pairs.
+    Read the 'D1', 'D2', ... header at 1-indexed row `header_row` on `ws` and
+    the `num_situations` data rows immediately below it. Returns a list of
+    distributions, each a list of `num_situations` [option_1, option_2] pairs.
     """
-    wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
-    ws = wb["All"]
     rows = list(ws.iter_rows(values_only=True))
-    header = rows[1]  # e.g. (None, 'D1', None, 'D2', None, 'D3', ...)
-    data_rows = rows[2 : 2 + num_situations]  # first `num_situations` situation rows
+    header = rows[header_row - 1]  # e.g. (None, 'D1', None, 'D2', None, 'D3', ...)
+    data_rows = rows[header_row : header_row + num_situations]
 
     distributions = []
     col = 1
@@ -191,13 +205,53 @@ def load_distributions(num_situations):
         pairs = [[row[col], row[col + 1]] for row in data_rows]
         if len(pairs) < num_situations or any(a is None or b is None for a, b in pairs):
             raise ValueError(
-                f"Distributions.xlsx column '{header[col]}' on the 'All' sheet "
-                f"doesn't have {num_situations} filled-in situation rows (NUM_SITUATIONS "
+                f"Distributions.xlsx column '{header[col]}' starting at row {header_row} on "
+                f"the 'All' sheet doesn't have {num_situations} filled-in rows (NUM_SITUATIONS "
                 f"in settings.py). Add more rows to the sheet or lower NUM_SITUATIONS."
             )
         distributions.append(pairs)
         col += 2
     return distributions
+
+
+def _find_variation_header_row(ws, variation_label):
+    """
+    Locate a "Variation 2.x" block on the "All" sheet by its section label in
+    column A (e.g. "Variation 2.1: Random allocation..."), and return the
+    1-indexed row of the 'D1', 'D2', ... header below it. Follows the sheet's
+    layout convention: label row, one blank row, then the header row.
+    """
+    for (cell,) in ws.iter_rows(min_col=1, max_col=1):
+        if isinstance(cell.value, str) and cell.value.startswith(variation_label):
+            return cell.row + 2
+    raise ValueError(
+        f"Distributions.xlsx 'All' sheet: no section labeled '{variation_label}' found in column A."
+    )
+
+
+def load_distributions(num_situations):
+    """
+    Read every distribution (D1, D2, ...) from Distributions.xlsx's "All" sheet's
+    original table. Returns a list of distributions, each a list of
+    `num_situations` [option_1, option_2] pairs, in their original row pairing.
+    """
+    wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
+    ws = wb["All"]
+    return _load_outcome_table(ws, header_row=2, num_situations=num_situations)
+
+
+def load_locked_distributions(num_situations, variation_label):
+    """
+    Read every distribution from one of the "All" sheet's fixed-pairing blocks
+    (variation_label="Variation 2.1" or "Variation 2.2"). Unlike
+    load_distributions(), these already encode one specific, deterministic
+    [option_1, option_2] pairing per situation - the "locked" structure of
+    dependence described in creating_session() below.
+    """
+    wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
+    ws = wb["All"]
+    header_row = _find_variation_header_row(ws, variation_label)
+    return _load_outcome_table(ws, header_row=header_row, num_situations=num_situations)
 
 
 def creating_session(subsession):
@@ -207,39 +261,75 @@ def creating_session(subsession):
     # distribution above, every "N possible situations" mention shown to
     # participants (task app templates), and the belief-guess accuracy checks
     # (task/__init__.py). Distributions.xlsx must have at least that many rows
-    # per distribution.
+    # per distribution, in the original table AND in both "Variation 2.x" blocks.
     # ========================================================================
     num_situations = subsession.session.config["num_situations"]
     # D1-D5 are the Volatility-sheet distributions (alternating high/low volatility), D6-D10 the Skewness-sheet ones (alternating positive/negative skew) - see load_distributions() / SPOT 1 above to edit them.
     tuples_variations = load_distributions(num_situations)
+    locked_21_variations = load_locked_distributions(num_situations, "Variation 2.1")
+    locked_22_variations = load_locked_distributions(num_situations, "Variation 2.2")
     for group in subsession.get_groups():
         # one distribution per round, drawn without replacement from all available distributions (there must be at least C.NUM_ROUNDS of them)
         tuples_order = random.sample(range(len(tuples_variations)), TaskC.NUM_ROUNDS)
         frequentbetterA = []
         payoffsA = []
         payoffsB = []
-        # For each round, the order in which the N situations end up displayed(1-indexed, matching their row order in Distributions.xlsx). 
-        # Recorded per round for sequential treatment
-        situation_order = []
+        # For each round, the order (1-indexed, matching Distributions.xlsx row
+        # order) in which each alternative's outcomes end up displayed. Recorded
+        # separately per alternative: under "Variation 1" the two differ (each
+        # alternative is shuffled independently), while under "Variation 2.1"/
+        # "2.2" they're identical (the pairing is locked, so both alternatives
+        # share the one situation order).
+        situation_order_a = []
+        situation_order_b = []
+        # Which structure-of-dependence variation was used each round: "1" =
+        # outcomes independently shuffled per alternative (dependence broken
+        # up); "2.1"/"2.2" = one of the two fixed pairings from Distributions.xlsx
+        # (dependence preserved, only situation order randomized). Drawn per
+        # round with 50% / 25% / 25% probability respectively.
+        dependence_variation = []
         for i in range(TaskC.NUM_ROUNDS):
-            helpA = []
-            helpB = []
             AorB = random.choice([0, 1])
             frequentbetterA.append(AorB)
 
-            tuples = list(tuples_variations[tuples_order[i]])
-            paired = list(enumerate(tuples, start=1))
-            random.shuffle(paired)
-            order_this_round = [situation_id for situation_id, _ in paired]
-            situation_order.append(order_this_round)
-            j = 0
-            while j < num_situations:
-                pair = paired[j][1]
-                helpA.append(pair[AorB])
-                helpB.append(pair[1 - AorB])
-                j = j + 1
-            payoffsA.append(helpA)
-            payoffsB.append(helpB)
+            variation = random.choices(["1", "2.1", "2.2"], weights=[0.5, 0.25, 0.25])[0]
+            dependence_variation.append(variation)
+
+            if variation == "1":
+                tuples = list(tuples_variations[tuples_order[i]])
+                values_a = [pair[AorB] for pair in tuples]
+                values_b = [pair[1 - AorB] for pair in tuples]
+
+                # Independently permute which original row's outcome lands in
+                # which displayed situation, once per alternative - this is what
+                # breaks the original row's [option_1, option_2] pairing (mirrors
+                # the two independent SORTBY(..., RANDARRAY(...)) formulas per
+                # distribution in Distributions.xlsx's "All" sheet, "Variation 1"
+                # block).
+                order_a = list(range(1, num_situations + 1))
+                random.shuffle(order_a)
+                order_b = list(range(1, num_situations + 1))
+                random.shuffle(order_b)
+
+                situation_order_a.append(order_a)
+                situation_order_b.append(order_b)
+                payoffsA.append([values_a[r - 1] for r in order_a])
+                payoffsB.append([values_b[r - 1] for r in order_b])
+            else:
+                # "Variation 2.1"/"2.2": a fixed [option_1, option_2] pairing, read
+                # straight from the matching "All" sheet block (SPOT 1). Only the
+                # situation order is randomized - both alternatives share that one
+                # order, since their outcomes stay locked together.
+                locked_variations = locked_21_variations if variation == "2.1" else locked_22_variations
+                tuples = list(locked_variations[tuples_order[i]])
+
+                order = list(range(1, num_situations + 1))
+                random.shuffle(order)
+
+                situation_order_a.append(order)
+                situation_order_b.append(order)
+                payoffsA.append([tuples[r - 1][AorB] for r in order])
+                payoffsB.append([tuples[r - 1][1 - AorB] for r in order])
         # "Initial wealth" offset added to bonus payoffs
         drawn_payoffs = [v for lst in payoffsA + payoffsB for v in lst]
         wealth_W = max(0, -min(drawn_payoffs))
@@ -249,7 +339,9 @@ def creating_session(subsession):
             player.participant.frequentbetterA = frequentbetterA
             player.participant.payoffsA = payoffsA
             player.participant.payoffsB = payoffsB
-            player.participant.situation_order = situation_order
+            player.participant.situation_order_a = situation_order_a
+            player.participant.situation_order_b = situation_order_b
+            player.participant.dependence_variation = dependence_variation
             player.participant.wealth_W = wealth_W
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             order_images = C.SAMPLE_IAMX.copy()
