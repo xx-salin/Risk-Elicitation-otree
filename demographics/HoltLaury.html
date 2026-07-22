@@ -1,0 +1,98 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Risk Preferences (Holt-Laury)
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .hl-card {
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .hl-card.selected {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    .hl-card input[type="radio"] {
+        visibility: hidden;
+    }
+</style>
+
+<p>
+    You will now make a series of 10 choices between two options, <b>Option A</b> and <b>Option B</b>, each of which
+    offers two possible payoffs. For each choice, the chance of receiving the higher or lower payoff is shown below.
+    As you move down the list, the chance of receiving the higher payoff increases.
+</p>
+<p>
+    You will receive an <b>additional bonus payment</b> based on your decision. 
+    One of these 10 choices will be randomly selected and your payoff will be drawn based on the option you chose for that choice.
+</p>
+<p>
+    There are no right or wrong answers, please choose the option you honestly prefer in each row.
+</p>
+
+{% for c in choices %}
+<div class="my-4">
+    <h5>Decision {{ c.index }}</h5>
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+        <div class="col">
+            <div class="card h-100 hl-card" data-field="{{ c.field_name }}" data-value="0">
+                <h6 class="card-header">Option A</h6>
+                <div class="card-body">
+                    <p>
+                        {{ c.prob_pct }} chance of &pound;{{ a_hi }}, {{ c.inverse_prob_pct }} chance of &pound;{{ a_lo }}
+                    </p>
+                    <div class="d-flex justify-content-center">
+                        <input type="radio" name="{{ c.field_name }}" value="0" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 hl-card" data-field="{{ c.field_name }}" data-value="1">
+                <h6 class="card-header">Option B</h6>
+                <div class="card-body">
+                    <p>
+                        {{ c.prob_pct }} chance of &pound;{{ b_hi }}, {{ c.inverse_prob_pct }} chance of &pound;{{ b_lo }}
+                    </p>
+                    <div class="d-flex justify-content-center">
+                        <input type="radio" name="{{ c.field_name }}" value="1" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="d-grid gap-2 mt-4">
+    <button class="btn btn-primary otree-btn-next">Continue</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.hl-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            var field = card.dataset.field;
+            document.querySelectorAll('.hl-card[data-field="' + field + '"]').forEach(function (c) {
+                c.classList.remove('selected');
+            });
+            card.classList.add('selected');
+            var radio = card.querySelector('input[type="radio"]');
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    });
+
+    function skipPage() {
+        document.querySelectorAll('.hl-card[data-value="0"]').forEach(function (card) {
+            card.click();
+        });
+    }
+</script>
+{% endblock %}

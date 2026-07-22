@@ -5,22 +5,55 @@
 {{ block content }}
 
 <p>
-    Round {{ bonus_period }} was randomly drawn for your bonus payment.
+    Your total bonus payment is made up of two separate parts, described below.
 </p>
-<p>
-    {{ if player.participant.incentive == "beliefs" }}
-        {{ if player.participant.Bonus == 1 }}
-            Your randomly selected guess in this round qualifies for a bonus payment.
-        {{ else }}
-            Your randomly selected guess in this round does not qualify for a bonus payment.
-        {{ endif }}
-        You thus earn a bonus of £{{ bonusamount }}.
-    {{ else }}
-        You chose {{ asset }} in round {{ bonus_period }}.
-        A situation was randomly drawn for {{ asset }}, and your starting wealth was added to its outcome (see the "Compensation" instructions),
-        giving you a bonus payment of £{{ payoff }}.
-    {{ endif }}
-</p>
+
+<div class="card mb-3">
+    <div class="card-header"><b>1. Task bonus</b></div>
+    <div class="card-body">
+        <p>
+            Round {{ bonus_period }} was randomly drawn for your bonus payment.
+        </p>
+        <p>
+            {{ if incentive == "beliefs" }}
+                {{ if player.participant.Bonus == 1 }}
+                    Your randomly selected guess in this round qualified for a bonus payment.
+                {{ else }}
+                    Your randomly selected guess in this round did not qualify for a bonus payment.
+                {{ endif }}
+            {{ else }}
+                You chose {{ asset }} in round {{ bonus_period }}.
+                A situation was randomly drawn for {{ asset }}, and your starting wealth was added to its outcome
+                (see the "Compensation" instructions).
+            {{ endif }}
+        </p>
+        <p class="mb-0">
+            Task bonus: <b>£{{ task_bonus }}</b>
+        </p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><b>2. Holt-Laury bonus</b></div>
+    <div class="card-body">
+        <p>
+            Decision {{ hl_index_to_pay }} was randomly drawn for your Holt-Laury bonus payment.
+            You chose Option {{ hl_option_chosen }} in that decision, and the computer made a random draw based on
+            its probabilities.
+        </p>
+        <p class="mb-0">
+            Holt-Laury bonus: <b>£{{ hl_bonus }}</b>
+        </p>
+    </div>
+</div>
+
+<div class="alert alert-primary">
+    <p class="mb-0">
+        <b>Total bonus payment: £{{ total_bonus }}</b>
+        (£{{ task_bonus }} task bonus + £{{ hl_bonus }} Holt-Laury bonus)
+    </p>
+</div>
+
 <p>
     <b><a href="https://app.prolific.com/submissions/complete?cc=CERJ08U4">Click here to complete the study and to be redirected to Prolific.</a></b>
 </p>
