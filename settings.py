@@ -30,21 +30,9 @@ NUM_SITUATIONS = 11
 
 
 # BELIEF FREQUENCY THRESHOLD
-# Lower threshold (in low-stakes payoff units) used by the "guess the frequency of payoffs below L" belief question in the task app (Expectations/Expectations_Choicepages). Keep within range actual payoffs (ie -2.1 to 2.1). Scaled by the stakes multiplier for high-stakes participants.
-FREQ_THRES_L = 0.8
 # Tolerance band (as a fraction, e.g. 0.05 = +/-5%) around the correct answer within which a belief guess (Average_Guess_Alt1/2, Prob_1_Guess_Alt1/2) still counts as correct for the bonus payment. Used throughout task/__init__.py's NextRound page.
 GUESS_TOLERANCE = 0.05
 #####
-
-
-
-# TAIL-EVENT THRESHOLDS (simultaneous condition summary table)
-# Keep within the range of actual payoffs (ie -2.1 to 2.1).
-TAIL_THRES_L = 0.6
-TAIL_THRES_H = 1.4
-#####
-
-
 
 
 
@@ -65,13 +53,10 @@ SESSION_CONFIG_DEFAULTS = dict(
     stakes_factor_f=STAKES_FACTOR_F,
     stakes_source_field=STAKES_SOURCE_FIELD,
     num_situations=NUM_SITUATIONS,
-    freq_thres_l=FREQ_THRES_L,
     guess_tolerance=GUESS_TOLERANCE,
-    tail_thres_l=TAIL_THRES_L,
-    tail_thres_h=TAIL_THRES_H,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "attention_check_number", "wealth_W", "color_treatment"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "freq_thres_l", "tail_thres_l", "tail_thres_h", "attention_check_number", "wealth_W", "color_treatment"]
 SESSION_FIELDS = []
 
 # ISO-639 code

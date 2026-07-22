@@ -254,6 +254,46 @@ def load_locked_distributions(num_situations, variation_label):
     return _load_outcome_table(ws, header_row=header_row, num_situations=num_situations)
 
 
+def load_round_thresholds():
+    """
+    Read the per-distribution FREQ_THRES_L / TAIL_THRES_L / TAIL_THRES_H values
+    from the "All" sheet's "Round Thresholds" block. The same threshold is used
+    for both alternatives in a round, but the value can differ by distribution
+    (D1..D10) - see creating_session() below for how the right value is picked
+    for a given round based on which distribution it draws.
+    Returns {"FREQ_THRES_L": [...], "TAIL_THRES_L": [...], "TAIL_THRES_H": [...]},
+    each a list with one value per distribution, in D1..Dn column order.
+    """
+    wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
+    ws = wb["All"]
+    header_row = _find_variation_header_row(ws, "Round Thresholds")
+    rows = list(ws.iter_rows(values_only=True))
+    header = rows[header_row - 1]
+
+    cols = []
+    col = 1
+    while col < len(header) and header[col] is not None:
+        cols.append(col)
+        col += 2
+
+    thresholds = {}
+    for label in ("FREQ_THRES_L", "TAIL_THRES_L", "TAIL_THRES_H"):
+        row = next((r for r in rows[header_row : header_row + 10] if r and r[0] == label), None)
+        if row is None:
+            raise ValueError(
+                f"Distributions.xlsx 'All' sheet: no row labeled '{label}' found under "
+                f"the 'Round Thresholds' header (row {header_row})."
+            )
+        values = [row[c] for c in cols]
+        if not cols or any(v is None for v in values):
+            raise ValueError(
+                f"Distributions.xlsx 'Round Thresholds' row '{label}' is missing a value "
+                f"for one of its {len(cols)} distribution columns."
+            )
+        thresholds[label] = values
+    return thresholds
+
+
 def creating_session(subsession):
     # ========================================================================
     # SPOT 2: to change the number of situations per round, edit NUM_SITUATIONS
@@ -268,12 +308,22 @@ def creating_session(subsession):
     tuples_variations = load_distributions(num_situations)
     locked_21_variations = load_locked_distributions(num_situations, "Variation 2.1")
     locked_22_variations = load_locked_distributions(num_situations, "Variation 2.2")
+    # Per-distribution FREQ_THRES_L / TAIL_THRES_L / TAIL_THRES_H (Distributions.xlsx
+    # "All" sheet, "Round Thresholds" block) - static, so loaded once here rather
+    # than per group/round.
+    round_thresholds = load_round_thresholds()
     for group in subsession.get_groups():
         # one distribution per round, drawn without replacement from all available distributions (there must be at least C.NUM_ROUNDS of them)
         tuples_order = random.sample(range(len(tuples_variations)), TaskC.NUM_ROUNDS)
         frequentbetterA = []
         payoffsA = []
         payoffsB = []
+        # This round's threshold values, looked up per round from round_thresholds
+        # using whichever distribution (tuples_order[i]) that round drew - the
+        # same threshold applies to both alternatives in the round.
+        freq_thres_l_list = []
+        tail_thres_l_list = []
+        tail_thres_h_list = []
         # For each round, the order (1-indexed, matching Distributions.xlsx row
         # order) in which each alternative's outcomes end up displayed. Recorded
         # separately per alternative: under "Variation 1" the two differ (each
@@ -294,6 +344,11 @@ def creating_session(subsession):
 
             variation = random.choices(["1", "2.1", "2.2"], weights=[0.5, 0.25, 0.25])[0]
             dependence_variation.append(variation)
+
+            dist_idx = tuples_order[i]
+            freq_thres_l_list.append(round_thresholds["FREQ_THRES_L"][dist_idx])
+            tail_thres_l_list.append(round_thresholds["TAIL_THRES_L"][dist_idx])
+            tail_thres_h_list.append(round_thresholds["TAIL_THRES_H"][dist_idx])
 
             if variation == "1":
                 tuples = list(tuples_variations[tuples_order[i]])
@@ -342,6 +397,9 @@ def creating_session(subsession):
             player.participant.situation_order_a = situation_order_a
             player.participant.situation_order_b = situation_order_b
             player.participant.dependence_variation = dependence_variation
+            player.participant.freq_thres_l = freq_thres_l_list
+            player.participant.tail_thres_l = tail_thres_l_list
+            player.participant.tail_thres_h = tail_thres_h_list
             player.participant.wealth_W = wealth_W
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             order_images = C.SAMPLE_IAMX.copy()

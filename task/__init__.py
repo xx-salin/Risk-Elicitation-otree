@@ -45,6 +45,13 @@ class Player(BasePlayer):
     # Drawn per round in setup/__init__.py's creating_session with 50%/25%/25%
     # probability; copied here per round for the CSV export.
     dependence_variation = models.StringField()
+    # Per-distribution thresholds (Distributions.xlsx "All" sheet, "Round
+    # Thresholds" block) for this round's distribution - same threshold used for
+    # both alternatives. Copied per round from participant.freq_thres_l/
+    # tail_thres_l/tail_thres_h (setup/__init__.py) for the CSV export.
+    freq_thres_l = models.FloatField()
+    tail_thres_l = models.FloatField()
+    tail_thres_h = models.FloatField()
 
     # bonus
     Bonus = models.IntegerField(
@@ -143,6 +150,9 @@ class Payoffs_Together(Page):
         player.situation_order_a = ','.join(str(s) for s in player.participant.situation_order_a[player.round_number-1])
         player.situation_order_b = ','.join(str(s) for s in player.participant.situation_order_b[player.round_number-1])
         player.dependence_variation = player.participant.dependence_variation[player.round_number-1]
+        player.freq_thres_l = player.participant.freq_thres_l[player.round_number-1]
+        player.tail_thres_l = player.participant.tail_thres_l[player.round_number-1]
+        player.tail_thres_h = player.participant.tail_thres_h[player.round_number-1]
         player.color_treatment = player.participant.color_treatment
         multiplier = player.participant.stakes_multiplier
         arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
@@ -154,10 +164,11 @@ class Payoffs_Together(Page):
         def pct0(x):
             return f"{x:.0%}"
 
-        # TAIL_THRES_L/H (settings.py) - thresholds scale with stakes so
-        # "below/above" stays meaningful regardless of the multiplier
-        below_threshold = player.session.config["tail_thres_l"] * multiplier
-        above_threshold = player.session.config["tail_thres_h"] * multiplier
+        # TAIL_THRES_L/H (per-distribution, Distributions.xlsx "All" sheet) -
+        # thresholds scale with stakes so "below/above" stays meaningful
+        # regardless of the multiplier
+        below_threshold = player.tail_thres_l * multiplier
+        above_threshold = player.tail_thres_h * multiplier
 
         averageA = fmt2(sum(arrayA) / len(arrayA))
         averageB = fmt2(sum(arrayB) / len(arrayB))
@@ -231,7 +242,7 @@ class Expectations(Page):
             round_number = player.round_number,
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = f"{player.session.config['freq_thres_l'] * multiplier:.2f}",
+            freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
         )
 
     @staticmethod
@@ -259,7 +270,7 @@ class Expectations_Choice(Page):
         return dict(
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = f"{player.session.config['freq_thres_l'] * multiplier:.2f}",
+            freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
             round_number = player.round_number,
         )
 
@@ -311,15 +322,16 @@ class NextRound(Page):
                     if lo <= player.Average_Guess_Alt2 <= hi:
                         player.Bonus = 1
                 if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff
-                    # threshold matches freq_thres_l = FREQ_THRES_L (settings.py) *
+                    # threshold matches freq_thres_l for this round's distribution
+                    # (Distributions.xlsx "All" sheet, "Round Thresholds" block) *
                     # multiplier shown on the Expectations page; multiplier cancels out
                     # here since payoffsA_this_round is unscaled
-                    freq_thres_l = player.session.config["freq_thres_l"]
+                    freq_thres_l = player.participant.freq_thres_l[player.round_number - 1]
                     correct_value = 100 * sum(x < freq_thres_l for x in payoffsA_this_round) / len(payoffsA_this_round)
                     if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt1 <= (1 + tol) * correct_value:
                         player.Bonus = 1
                 if random_choice == 4:  # Prob_1_Guess_Alt2 chosen for payoff
-                    freq_thres_l = player.session.config["freq_thres_l"]
+                    freq_thres_l = player.participant.freq_thres_l[player.round_number - 1]
                     correct_value = 100 * sum(x < freq_thres_l for x in payoffsB_this_round) / len(payoffsB_this_round)
                     if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt2 <= (1 + tol) * correct_value:
                         player.Bonus = 1
