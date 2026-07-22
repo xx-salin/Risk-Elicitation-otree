@@ -256,13 +256,14 @@ def load_locked_distributions(num_situations, variation_label):
 
 def load_round_thresholds():
     """
-    Read the per-distribution FREQ_THRES_L / TAIL_THRES_L / TAIL_THRES_H values
-    from the "All" sheet's "Round Thresholds" block. The same threshold is used
-    for both alternatives in a round, but the value can differ by distribution
-    (D1..D10) - see creating_session() below for how the right value is picked
-    for a given round based on which distribution it draws.
-    Returns {"FREQ_THRES_L": [...], "TAIL_THRES_L": [...], "TAIL_THRES_H": [...]},
-    each a list with one value per distribution, in D1..Dn column order.
+    Read the per-distribution FREQ_THRES_L / FREQ_THRES_H / TAIL_THRES_L /
+    TAIL_THRES_H values from the "All" sheet's "Round Thresholds" block. The
+    same threshold is used for both alternatives in a round, but the value can
+    differ by distribution (D1..D10) - see creating_session() below for how the
+    right value is picked for a given round based on which distribution it draws.
+    Returns {"FREQ_THRES_L": [...], "FREQ_THRES_H": [...], "TAIL_THRES_L": [...],
+    "TAIL_THRES_H": [...]}, each a list with one value per distribution, in
+    D1..Dn column order.
     """
     wb = load_workbook(DISTRIBUTIONS_FILE, data_only=True)
     ws = wb["All"]
@@ -277,7 +278,7 @@ def load_round_thresholds():
         col += 2
 
     thresholds = {}
-    for label in ("FREQ_THRES_L", "TAIL_THRES_L", "TAIL_THRES_H"):
+    for label in ("FREQ_THRES_L", "FREQ_THRES_H", "TAIL_THRES_L", "TAIL_THRES_H"):
         row = next((r for r in rows[header_row : header_row + 10] if r and r[0] == label), None)
         if row is None:
             raise ValueError(
@@ -322,6 +323,7 @@ def creating_session(subsession):
         # using whichever distribution (tuples_order[i]) that round drew - the
         # same threshold applies to both alternatives in the round.
         freq_thres_l_list = []
+        freq_thres_h_list = []
         tail_thres_l_list = []
         tail_thres_h_list = []
         # For each round, the order (1-indexed, matching Distributions.xlsx row
@@ -347,6 +349,7 @@ def creating_session(subsession):
 
             dist_idx = tuples_order[i]
             freq_thres_l_list.append(round_thresholds["FREQ_THRES_L"][dist_idx])
+            freq_thres_h_list.append(round_thresholds["FREQ_THRES_H"][dist_idx])
             tail_thres_l_list.append(round_thresholds["TAIL_THRES_L"][dist_idx])
             tail_thres_h_list.append(round_thresholds["TAIL_THRES_H"][dist_idx])
 
@@ -398,6 +401,7 @@ def creating_session(subsession):
             player.participant.situation_order_b = situation_order_b
             player.participant.dependence_variation = dependence_variation
             player.participant.freq_thres_l = freq_thres_l_list
+            player.participant.freq_thres_h = freq_thres_h_list
             player.participant.tail_thres_l = tail_thres_l_list
             player.participant.tail_thres_h = tail_thres_h_list
             player.participant.wealth_W = wealth_W

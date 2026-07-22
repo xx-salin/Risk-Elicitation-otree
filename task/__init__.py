@@ -48,8 +48,9 @@ class Player(BasePlayer):
     # Per-distribution thresholds (Distributions.xlsx "All" sheet, "Round
     # Thresholds" block) for this round's distribution - same threshold used for
     # both alternatives. Copied per round from participant.freq_thres_l/
-    # tail_thres_l/tail_thres_h (setup/__init__.py) for the CSV export.
+    # freq_thres_h/tail_thres_l/tail_thres_h (setup/__init__.py) for the CSV export.
     freq_thres_l = models.FloatField()
+    freq_thres_h = models.FloatField()
     tail_thres_l = models.FloatField()
     tail_thres_h = models.FloatField()
 
@@ -92,6 +93,14 @@ class Player(BasePlayer):
         max=100
     )
     Prob_1_Guess_Alt2 = models.FloatField(
+        min=0,
+        max=100
+    )
+    Prob_2_Guess_Alt1 = models.FloatField(
+        min=0,
+        max=100
+    )
+    Prob_2_Guess_Alt2 = models.FloatField(
         min=0,
         max=100
     )
@@ -151,6 +160,7 @@ class Payoffs_Together(Page):
         player.situation_order_b = ','.join(str(s) for s in player.participant.situation_order_b[player.round_number-1])
         player.dependence_variation = player.participant.dependence_variation[player.round_number-1]
         player.freq_thres_l = player.participant.freq_thres_l[player.round_number-1]
+        player.freq_thres_h = player.participant.freq_thres_h[player.round_number-1]
         player.tail_thres_l = player.participant.tail_thres_l[player.round_number-1]
         player.tail_thres_h = player.participant.tail_thres_h[player.round_number-1]
         player.color_treatment = player.participant.color_treatment
@@ -233,7 +243,7 @@ class Expectations(Page):
 
     @staticmethod
     def get_form_fields(player):
-        return ['Average_Guess_Alt1','Average_Guess_Alt2','Prob_1_Guess_Alt1','Prob_1_Guess_Alt2','Volatility']
+        return ['Average_Guess_Alt1','Average_Guess_Alt2','Prob_1_Guess_Alt1','Prob_1_Guess_Alt2','Prob_2_Guess_Alt1','Prob_2_Guess_Alt2','Volatility']
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -243,6 +253,7 @@ class Expectations(Page):
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
             freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
+            freq_thres_h = f"{player.participant.freq_thres_h[player.round_number-1] * multiplier:.2f}",
         )
 
     @staticmethod
@@ -262,7 +273,7 @@ class Expectations_Choice(Page):
 
     @staticmethod
     def get_form_fields(player):
-        return ['Average_Guess_Alt1','Average_Guess_Alt2','Prob_1_Guess_Alt1','Prob_1_Guess_Alt2','Volatility']
+        return ['Average_Guess_Alt1','Average_Guess_Alt2','Prob_1_Guess_Alt1','Prob_1_Guess_Alt2','Prob_2_Guess_Alt1','Prob_2_Guess_Alt2','Volatility']
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -271,6 +282,7 @@ class Expectations_Choice(Page):
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
             freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
+            freq_thres_h = f"{player.participant.freq_thres_h[player.round_number-1] * multiplier:.2f}",
             round_number = player.round_number,
         )
 
@@ -301,7 +313,7 @@ class NextRound(Page):
         player.participant.random_draw = random.choice([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         if player.incentive == "beliefs":
             if player.round_number == player.participant.bonusperiod:
-                random_choice = random.randint(1,5)
+                random_choice = random.randint(1,7)
                 payoffsA_this_round = player.participant.payoffsA[player.round_number - 1]
                 payoffsB_this_round = player.participant.payoffsB[player.round_number - 1]
                 # +/-GUESS_TOLERANCE (settings.py) band around the correct answer
@@ -334,6 +346,20 @@ class NextRound(Page):
                     freq_thres_l = player.participant.freq_thres_l[player.round_number - 1]
                     correct_value = 100 * sum(x < freq_thres_l for x in payoffsB_this_round) / len(payoffsB_this_round)
                     if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt2 <= (1 + tol) * correct_value:
+                        player.Bonus = 1
+                if random_choice == 6:  # Prob_2_Guess_Alt1 chosen for payoff
+                    # threshold matches freq_thres_h for this round's distribution
+                    # (Distributions.xlsx "All" sheet, "Round Thresholds" block) *
+                    # multiplier shown on the Expectations page; multiplier cancels out
+                    # here since payoffsA_this_round is unscaled
+                    freq_thres_h = player.participant.freq_thres_h[player.round_number - 1]
+                    correct_value = 100 * sum(x > freq_thres_h for x in payoffsA_this_round) / len(payoffsA_this_round)
+                    if (1 - tol) * correct_value <= player.Prob_2_Guess_Alt1 <= (1 + tol) * correct_value:
+                        player.Bonus = 1
+                if random_choice == 7:  # Prob_2_Guess_Alt2 chosen for payoff
+                    freq_thres_h = player.participant.freq_thres_h[player.round_number - 1]
+                    correct_value = 100 * sum(x > freq_thres_h for x in payoffsB_this_round) / len(payoffsB_this_round)
+                    if (1 - tol) * correct_value <= player.Prob_2_Guess_Alt2 <= (1 + tol) * correct_value:
                         player.Bonus = 1
                 if random_choice == 5:  # Volatility chosen for payoff
                     stdA = math.sqrt(sum((x - sum(payoffsA_this_round) / len(payoffsA_this_round)) ** 2 for x in payoffsA_this_round) / len(payoffsA_this_round))

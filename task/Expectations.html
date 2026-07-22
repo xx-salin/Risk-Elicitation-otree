@@ -37,7 +37,8 @@
 <br>
 <br>
     <p>
-            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ freq_thres_l }}:
+            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ freq_thres_l }}
+            or above {{ freq_thres_h }}:
     </p>
         <table id="table2" class="display" style="width:100%">
             <thead>
@@ -52,6 +53,11 @@
                     <td> Payoff below {{ freq_thres_l }} </td>
                     <td><input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     <td><input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
+                    </tr>
+                <tr>
+                    <td> Payoff above {{ freq_thres_h }} </td>
+                    <td><input type="number" id="Prob_2_Guess_Alt1" name="Prob_2_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
+                    <td><input type="number" id="Prob_2_Guess_Alt2" name="Prob_2_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     </tr>
                     </tbody>
         </table>
