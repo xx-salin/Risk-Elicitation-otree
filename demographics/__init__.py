@@ -15,6 +15,12 @@ class C(BaseConstants):
     # Original Holt & Laury (2002) amounts (A: 2.00/1.60, B: 3.85/0.10) scaled by 4/7.55 and rounded to the nearest penny, so the mean of the 4 possible payoffs is exactly £1.00 while keeping the same EV crossover point.
     HL_PAYOFFS = {'A': [1.06, 0.85], 'B': [2.04, 0.05]}
 
+    # BRET, Crosetto & Filippin (2013). 
+    # config.py (dynamic=False, random=False, devils_game=True, undoable=False).
+    # reimplemented as a single round with plain HTML/JS rather than the original Angular-based library, to match this project's other pages.
+    BRET_NUM_BOXES = 50
+    BRET_BOX_VALUE = 0.04
+
 class Subsession(BaseSubsession):
     pass
 
@@ -87,6 +93,13 @@ class Player(BasePlayer):
     hl_index_to_pay = models.IntegerField()
     hl_option_chosen = models.StringField()
     hl_payoff = models.FloatField()
+
+    # BRET: number of boxes the player chose to collect before stopping.
+    bret_boxes_collected = models.IntegerField(min=0, max=C.BRET_NUM_BOXES, label='')
+    # Position (1..BRET_NUM_BOXES) of the hidden bomb, drawn once when the page is first displayed. Never sent to the template/client.
+    bret_bomb_index = models.IntegerField(blank=True)
+    bret_bomb_hit = models.BooleanField(blank=True)
+    bret_payoff = models.FloatField(blank=True)
 
 
 def classify_hl_risk(num_safe_choices):
@@ -166,6 +179,39 @@ class HoltLaury(Page):
         player.hl_payoff = payoff
 
 
+class BRET(Page):
+    form_model = "player"
+    form_fields = ['bret_boxes_collected']
+
+    @staticmethod
+    def vars_for_template(player):
+        # Draw (and freeze) the bomb's position the first time this page is
+        # displayed, so a page reload doesn't move the bomb mid-decision.
+        if player.field_maybe_none('bret_bomb_index') is None:
+            player.bret_bomb_index = random.randint(1, C.BRET_NUM_BOXES)
+        return dict(
+            box_indices=list(range(1, C.BRET_NUM_BOXES + 1)),
+            num_boxes=C.BRET_NUM_BOXES,
+            box_value=f"{C.BRET_BOX_VALUE:.2f}",
+            max_payoff=f"{C.BRET_NUM_BOXES * C.BRET_BOX_VALUE:.2f}",
+            # Sent to the client so the box that explodes can be revealed to the
+            # player immediately on click (matching oTree_BRET-master's reference
+            # implementation, which likewise determines/reveals the bomb client-side).
+            # This is the same value before_next_page uses to score the round, so
+            # the live reveal always matches what's actually paid.
+            bomb_index=player.bret_bomb_index,
+        )
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        if player.bret_boxes_collected >= player.bret_bomb_index:
+            player.bret_bomb_hit = True
+            player.bret_payoff = 0.0
+        else:
+            player.bret_bomb_hit = False
+            player.bret_payoff = player.bret_boxes_collected * C.BRET_BOX_VALUE
+
+
 class completioncode(Page):
     form_model = "player"
 
@@ -210,5 +256,5 @@ class completioncode(Page):
             total_bonus=f"{total_bonus:.2f}",
         )
 
-page_sequence = [demographics, HoltLaury, completioncode]
+page_sequence = [demographics, HoltLaury, BRET, completioncode]
 
