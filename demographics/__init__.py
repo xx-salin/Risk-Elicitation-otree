@@ -85,6 +85,10 @@ class Player(BasePlayer):
         blank = True,
     )
 
+    # Which single risk elicitation method this participant sees, drawn once
+    # (demographics.before_next_page below): 'HoltLaury', 'BRET', or 'EckelGrossman'.
+    risk_task = models.StringField()
+
     # Holt-Laury: one field per decision row, 0 = Option A (safe), 1 = Option B (risky)
     hl_choice_1 = models.IntegerField(choices=[[0, 'Option A'], [1, 'Option B']], widget=widgets.RadioSelect, label='')
     hl_choice_2 = models.IntegerField(choices=[[0, 'Option A'], [1, 'Option B']], widget=widgets.RadioSelect, label='')
@@ -150,10 +154,20 @@ class demographics(Page):
     form_model = "player"
     form_fields = ["age","gender","riskaversion","fininterest","investor","financeprof","statistic","comments"]
 
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        # Draw which single risk elicitation method this participant will see,
+        # once, right before entering that block of pages.
+        player.risk_task = random.choice(['HoltLaury', 'BRET', 'EckelGrossman'])
+
 
 class HoltLaury(Page):
     form_model = "player"
     form_fields = [f'hl_choice_{i}' for i in range(1, C.HL_NUM_CHOICES + 1)]
+
+    @staticmethod
+    def is_displayed(player):
+        return player.risk_task == 'HoltLaury'
 
     @staticmethod
     def vars_for_template(player):
@@ -203,6 +217,10 @@ class BRET(Page):
     form_fields = ['bret_boxes_collected']
 
     @staticmethod
+    def is_displayed(player):
+        return player.risk_task == 'BRET'
+
+    @staticmethod
     def vars_for_template(player):
         # Draw (and freeze) the bomb's position the first time this page is
         # displayed, so a page reload doesn't move the bomb mid-decision.
@@ -234,6 +252,10 @@ class BRET(Page):
 class EckelGrossman(Page):
     form_model = "player"
     form_fields = ['eg_lottery_choice']
+
+    @staticmethod
+    def is_displayed(player):
+        return player.risk_task == 'EckelGrossman'
 
     @staticmethod
     def vars_for_template(player):
@@ -290,26 +312,35 @@ class completioncode(Page):
             # payment here works out the same as for the "low" stakes group.
             task_bonus = payoffs[player.participant.random_draw] + player.participant.wealth_W
 
+        # Only one of the three risk elicitation methods (demographics.before_next_page)
+        # was actually shown to this participant - pull the bonus (and the details
+        # needed to explain it) from whichever one that was.
+        risk_task = player.risk_task
+        if risk_task == 'HoltLaury':
+            risk_bonus = player.hl_payoff
+        elif risk_task == 'BRET':
+            risk_bonus = player.bret_payoff
+        else:
+            risk_bonus = player.eg_payoff
+
         # Total = task-app bonus (belief accuracy or investment choice, depending
-        # on the incentive condition) + the separately-drawn Holt-Laury, BRET, and
-        # Eckel-Grossman bonuses.
-        total_bonus = task_bonus + player.hl_payoff + player.bret_payoff + player.eg_payoff
+        # on the incentive condition) + the one risk-task bonus.
+        total_bonus = task_bonus + risk_bonus
 
         return dict(
             incentive=incentive,
             bonus_period=player.participant.bonusperiod,
             asset=asset,
             task_bonus=f"{task_bonus:.2f}",
-            hl_index_to_pay=player.hl_index_to_pay,
-            hl_option_chosen=player.hl_option_chosen,
-            hl_bonus=f"{player.hl_payoff:.2f}",
-            bret_boxes_collected=player.bret_boxes_collected,
-            bret_bomb_hit=player.bret_bomb_hit,
+            risk_task=risk_task,
+            risk_bonus=f"{risk_bonus:.2f}",
+            hl_index_to_pay=player.hl_index_to_pay if risk_task == 'HoltLaury' else None,
+            hl_option_chosen=player.hl_option_chosen if risk_task == 'HoltLaury' else None,
+            bret_boxes_collected=player.bret_boxes_collected if risk_task == 'BRET' else None,
+            bret_bomb_hit=player.bret_bomb_hit if risk_task == 'BRET' else None,
             bret_box_value=f"{C.BRET_BOX_VALUE:.2f}",
-            bret_bonus=f"{player.bret_payoff:.2f}",
-            eg_lottery_choice=player.eg_lottery_choice,
-            eg_outcome_to_pay=player.eg_outcome_to_pay,
-            eg_bonus=f"{player.eg_payoff:.2f}",
+            eg_lottery_choice=player.eg_lottery_choice if risk_task == 'EckelGrossman' else None,
+            eg_outcome_to_pay=player.eg_outcome_to_pay if risk_task == 'EckelGrossman' else None,
             total_bonus=f"{total_bonus:.2f}",
         )
 
