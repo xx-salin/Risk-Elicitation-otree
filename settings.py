@@ -25,10 +25,6 @@ NUM_SITUATIONS = 11
 #####
 
 
-
-
-
-
 # BELIEF FREQUENCY THRESHOLD
 # Tolerance band (as a fraction, e.g. 0.05 = +/-5%) around the correct answer within which a belief guess (Average_Guess_Alt1/2, Prob_1_Guess_Alt1/2) still counts as correct for the bonus payment. Used throughout task/__init__.py's NextRound page.
 GUESS_TOLERANCE = 0.05
@@ -56,7 +52,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     guess_tolerance=GUESS_TOLERANCE,
 )
 
-PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "freq_thres_l", "freq_thres_h", "tail_thres_l", "tail_thres_h", "wealth_W", "color_treatment"]
+PARTICIPANT_FIELDS = ["Bonus", "bonusperiod", "BonusChoice", "random_draw", "treatment", "incentive", "stakes", "stakes_multiplier", "belieftable", "tuplesorder", "frequentbetterA","payoffsA", "payoffsB", "situation_order_a", "situation_order_b", "dependence_variation", "freq_thres_l", "tail_thres_l", "tail_thres_h", "attention_check_number", "wealth_W", "color_treatment"]
 SESSION_FIELDS = []
 
 # ISO-639 code
