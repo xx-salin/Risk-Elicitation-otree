@@ -23,32 +23,23 @@ class Player(BasePlayer):
     treatment = models.StringField()
     incentive = models.StringField()
     stakes = models.StringField()
-    # 0 = payoff bars are color-coded red/green for loss/gain, 1 = bars keep
-    # their current neutral per-asset color. Randomized once per participant
-    # in setup/__init__.py; copied here per round for the CSV export.
+
     color_treatment = models.IntegerField()
 
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
-    # order (1-indexed, matching Distributions.xlsx row order) in which this round's
-    # N situations' Option A / Option B outcomes were drawn - comma-separated since
-    # a list can't be stored directly. Under dependence_variation "1" the two
-    # differ (each alternative shuffled independently); under "2.1"/"2.2" they're
-    # identical (the pairing is locked - see setup/__init__.py's creating_session).
-    # Copied per round from participant.situation_order_a/_b (setup/__init__.py)
-    # so they show up as columns in this app's own CSV export.
+
+    # order in which this round's situations' Option A / Option B outcomes were drawnup
     situation_order_a = models.StringField()
     situation_order_b = models.StringField()
-    # "1" = this round's outcomes were independently shuffled per alternative
-    # (structure of dependence broken up); "2.1"/"2.2" = one of the two fixed
-    # pairings from Distributions.xlsx (structure of dependence preserved).
+
+
+    # "1" = this round's outcomes were independently shuffled per alternative (structure of dependence broken up) 
+    # "2.1"/"2.2" = one of the two fixed pairings from Distributions.xlsx (structure of dependence preserved).
     # Drawn per round in setup/__init__.py's creating_session with 50%/25%/25%
-    # probability; copied here per round for the CSV export.
     dependence_variation = models.StringField()
-    # Per-distribution thresholds (Distributions.xlsx "All" sheet, "Round
-    # Thresholds" block) for this round's distribution - same threshold used for
-    # both alternatives. Copied per round from participant.freq_thres_l/
-    # freq_thres_h/tail_thres_l/tail_thres_h (setup/__init__.py) for the CSV export.
+
+    # Per-distribution thresholds for this round's distribution
     freq_thres_l = models.FloatField()
     freq_thres_h = models.FloatField()
     tail_thres_l = models.FloatField()
@@ -80,12 +71,7 @@ class Player(BasePlayer):
     )
 
     #beliefs
-    # min=None: otree defaults a numeric field's min to 0 unless told
-    # otherwise, which would silently reject negative guesses. Payoffs (and
-    # so the correct guess) can be negative and, at high stakes, can exceed
-    # the low-stakes range of +/-2.2, scaled by stakes_multiplier. Bounds are
-    # enforced dynamically per player - see Expectations.error_message /
-    # Expectations_Choice.error_message below.
+
     Average_Guess_Alt1 = models.FloatField(min=None)
     Average_Guess_Alt2 = models.FloatField(min=None)
     Prob_1_Guess_Alt1 = models.FloatField(
@@ -174,9 +160,8 @@ class Payoffs_Together(Page):
         def pct0(x):
             return f"{x:.0%}"
 
-        # TAIL_THRES_L/H (per-distribution, Distributions.xlsx "All" sheet) -
-        # thresholds scale with stakes so "below/above" stays meaningful
-        # regardless of the multiplier
+        # TAIL_THRES_L/H (per-distribution, Distributions.xlsx "All" sheet), thresholds scale with stakes
+
         below_threshold = player.tail_thres_l * multiplier
         above_threshold = player.tail_thres_h * multiplier
 
@@ -316,15 +301,11 @@ class NextRound(Page):
                 random_choice = random.randint(1,7)
                 payoffsA_this_round = player.participant.payoffsA[player.round_number - 1]
                 payoffsB_this_round = player.participant.payoffsB[player.round_number - 1]
+
                 # +/-GUESS_TOLERANCE (settings.py) band around the correct answer
                 tol = player.session.config["guess_tolerance"]
                 if random_choice == 1:  # Average_Guess_Alt1 chosen for payoff
-                    # scale by stakes_multiplier: the guess was made against
-                    # the displayed (possibly scaled) chart, so the
-                    # correctness check must use the same scale
                     correct_value = player.participant.stakes_multiplier * sum(payoffsA_this_round) / len(payoffsA_this_round)
-                    # correct_value can now be negative (losses), so the tolerance
-                    # band must be sorted rather than assumed low-to-high
                     lo, hi = sorted([(1 - tol) * correct_value, (1 + tol) * correct_value])
                     if lo <= player.Average_Guess_Alt1 <= hi:
                         player.Bonus = 1
@@ -333,11 +314,7 @@ class NextRound(Page):
                     lo, hi = sorted([(1 - tol) * correct_value, (1 + tol) * correct_value])
                     if lo <= player.Average_Guess_Alt2 <= hi:
                         player.Bonus = 1
-                if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff
-                    # threshold matches freq_thres_l for this round's distribution
-                    # (Distributions.xlsx "All" sheet, "Round Thresholds" block) *
-                    # multiplier shown on the Expectations page; multiplier cancels out
-                    # here since payoffsA_this_round is unscaled
+                if random_choice == 3:  # Prob_1_Guess_Alt1 chosen for payoff, threshold matches freq_thres_l for this round's distribution
                     freq_thres_l = player.participant.freq_thres_l[player.round_number - 1]
                     correct_value = 100 * sum(x < freq_thres_l for x in payoffsA_this_round) / len(payoffsA_this_round)
                     if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt1 <= (1 + tol) * correct_value:
@@ -347,11 +324,7 @@ class NextRound(Page):
                     correct_value = 100 * sum(x < freq_thres_l for x in payoffsB_this_round) / len(payoffsB_this_round)
                     if (1 - tol) * correct_value <= player.Prob_1_Guess_Alt2 <= (1 + tol) * correct_value:
                         player.Bonus = 1
-                if random_choice == 6:  # Prob_2_Guess_Alt1 chosen for payoff
-                    # threshold matches freq_thres_h for this round's distribution
-                    # (Distributions.xlsx "All" sheet, "Round Thresholds" block) *
-                    # multiplier shown on the Expectations page; multiplier cancels out
-                    # here since payoffsA_this_round is unscaled
+                if random_choice == 6:  # Prob_2_Guess_Alt1 chosen for payoff, threshold matches freq_thres_h for this round's distribution
                     freq_thres_h = player.participant.freq_thres_h[player.round_number - 1]
                     correct_value = 100 * sum(x > freq_thres_h for x in payoffsA_this_round) / len(payoffsA_this_round)
                     if (1 - tol) * correct_value <= player.Prob_2_Guess_Alt1 <= (1 + tol) * correct_value:

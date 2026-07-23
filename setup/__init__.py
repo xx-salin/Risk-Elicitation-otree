@@ -2,19 +2,17 @@ from otree.api import *
 import random
 from pathlib import Path
 from openpyxl import load_workbook
-from task import C as TaskC  # for TaskC.NUM_ROUNDS: the task app's round count
+from task import C as TaskC 
 
 doc = """
 Your app description
 """
 
-# Distributions.xlsx lives at the project root (one level up from this app).
 DISTRIBUTIONS_FILE = Path(__file__).resolve().parent.parent / "Distributions.xlsx"
-
 
 class C(BaseConstants):
     NAME_IN_URL = 'setup'
-    # 8 so that every cell of the 2x2x2 design (treatment x incentive x stakes) appears exactly once per group.
+    # 8 so that every cell of the 2x2x2 design (treatment x incentive x stakes) appears once per group.
     PLAYERS_PER_GROUP = 8
     NUM_ROUNDS = 1
     #attentionchecks
@@ -25,10 +23,7 @@ class C(BaseConstants):
     DEFAULT_CURRENCY = 'GBP'  # ADJUST THIS ONE
     DEFAULT_CURRENCY_SYMBOL = CURRENCIES[DEFAULT_CURRENCY]
 
-    # Lower bound (in DEFAULT_CURRENCY units) of each choice index, per
-    # elicit_wealth question. Used to compute the high-stakes multiplier:
-    # multiplier = STAKES_FACTOR_F (settings.py) * this lower bound, for
-    # whichever field STAKES_SOURCE_FIELD (settings.py) names.
+    # Lower bound (in DEFAULT_CURRENCY units) of each choice index, per elicit_wealth question. Used to compute the high-stakes multiplier:
     # "Prefer not to say" maps to 0 (no stakes boost).
     WEALTH_LOWER_BOUNDS = {
         "Demographics_Household_Income": {0: 0, 1: 0, 2: 10000, 3: 20000, 4: 40000, 5: 80000, 6: 160000, 7: 320000, 8: 0},
@@ -136,59 +131,14 @@ class Player(BasePlayer):
         ])
 
 
-#####!!!!
-    Demographics_LiquidityConstraints_1 = models.IntegerField(
-        label='Please assess the following statement: "I would be able to spend more today by using my disposable income."',
-        widget=widgets.RadioSelectHorizontal,
-        choices=[
-            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
-            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
-        ])
-
-    Demographics_LiquidityConstraints_2 = models.IntegerField(
-        label='Please assess the following statement: "I would be able to spend more today by using my net wealth (e.g., savings invested in bank accounts or stocks)."',
-        widget=widgets.RadioSelectHorizontal,
-        choices=[
-            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
-            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
-        ])
-
-    Demographics_LiquidityConstraints_3 = models.IntegerField(
-        label='Please assess the following statement: "I would be able to spend more today by borrowing money (e.g., using consumer credit).”',
-        widget=widgets.RadioSelectHorizontal,
-        choices=[
-            [1, 'Strongly disagree'], [2, 'Disagree'], [3, 'Neutral'],
-            [4, 'Agree'], [5, 'Strongly agree'], [6, 'Do not know'], [7, 'Prefer not to say'],
-        ])
-####!!!!
-
 
 # FUNCTIONS
 
-# ============================================================================
-# SPOT 1: to change the marginal outcomes for a distribution, just edit the
-# numbers directly in Distributions.xlsx (sheet "All", the block of rows
-# under the 'D1', 'D2', ... header). Each distribution Dn is 2 columns wide;
-# each row gives one [option_1, option_2] pair as it appears in the source
-# sheet. To add/remove an entire distribution, add/remove a 'Dn' column pair.
-# No code changes needed.
-#
-# NOTE: this original row-pairing is only ONE of three ways a round's
-# situations get built - see creating_session() below and the "All" sheet's
-# "Variation 1" / "Variation 2.1" / "Variation 2.2" blocks:
-#   - "Variation 1" (50% of rounds): option_1 and option_2 are independently
-#     shuffled across situations, breaking the row pairing. This is the
-#     SORTBY(..., RANDARRAY(...)) demo in "Variation 1"'s columns (press F9
-#     there to preview it) - not read by this app; creating_session()
-#     reimplements the same logic in Python so it can be re-rolled once per
-#     participant block at session start (see SPOT 2).
-#   - "Variation 2.1" / "Variation 2.2" (25% of rounds each): two OTHER fixed
-#     [option_1, option_2] pairings (different from the original row-pairing
-#     above, and from each other) - only the situation order is randomized,
-#     the pairing itself stays "locked". Unlike Variation 1, these ARE read
-#     directly from the sheet (see load_locked_distributions() below), since
-#     they're a fixed structure rather than something to re-roll live.
-# ============================================================================
+
+# SPOT 1: to change the marginal outcomes for a distribution edit the numbers directly in Distributions.xlsx 
+# "Variation 1" (50%) / "Variation 2.1" (25%) / "Variation 2.2" (25%)
+
+
 def _load_outcome_table(ws, header_row, num_situations):
     """
     Read the 'D1', 'D2', ... header at 1-indexed row `header_row` on `ws` and
@@ -296,49 +246,41 @@ def load_round_thresholds():
 
 
 def creating_session(subsession):
-    # ========================================================================
-    # SPOT 2: to change the number of situations per round, edit NUM_SITUATIONS
-    # in settings.py. It automatically updates: how many rows are read per
-    # distribution above, every "N possible situations" mention shown to
-    # participants (task app templates), and the belief-guess accuracy checks
-    # (task/__init__.py). Distributions.xlsx must have at least that many rows
-    # per distribution, in the original table AND in both "Variation 2.x" blocks.
-    # ========================================================================
+
+
+    # SPOT 2: to change the number of situations per round, edit NUM_SITUATIONS in settings.py.
+
     num_situations = subsession.session.config["num_situations"]
-    # D1-D5 are the Volatility-sheet distributions (alternating high/low volatility), D6-D10 the Skewness-sheet ones (alternating positive/negative skew) - see load_distributions() / SPOT 1 above to edit them.
+    # D1-D5 = Volatility-sheet distributions (alternating high/low volatility), D6-D10 = Skewness-sheet distributions (alternating positive/negative skew)
     tuples_variations = load_distributions(num_situations)
     locked_21_variations = load_locked_distributions(num_situations, "Variation 2.1")
     locked_22_variations = load_locked_distributions(num_situations, "Variation 2.2")
-    # Per-distribution FREQ_THRES_L / TAIL_THRES_L / TAIL_THRES_H (Distributions.xlsx
-    # "All" sheet, "Round Thresholds" block) - static, so loaded once here rather
-    # than per group/round.
+
+    # Per-distribution FREQ_THRES_L/H TAIL_THRES_L/H (Distributions.xlsx "All" sheet)
     round_thresholds = load_round_thresholds()
     for group in subsession.get_groups():
-        # one distribution per round, drawn without replacement from all available distributions (there must be at least C.NUM_ROUNDS of them)
+
+        # one distribution per round, drawn without replacement
         tuples_order = random.sample(range(len(tuples_variations)), TaskC.NUM_ROUNDS)
         frequentbetterA = []
         payoffsA = []
         payoffsB = []
+
         # This round's threshold values, looked up per round from round_thresholds
-        # using whichever distribution (tuples_order[i]) that round drew - the
-        # same threshold applies to both alternatives in the round.
         freq_thres_l_list = []
         freq_thres_h_list = []
         tail_thres_l_list = []
         tail_thres_h_list = []
-        # For each round, the order (1-indexed, matching Distributions.xlsx row
-        # order) in which each alternative's outcomes end up displayed. Recorded
-        # separately per alternative: under "Variation 1" the two differ (each
-        # alternative is shuffled independently), while under "Variation 2.1"/
-        # "2.2" they're identical (the pairing is locked, so both alternatives
-        # share the one situation order).
+
+        # For each round, the order in which each alternative's outcomes end up displayed.
         situation_order_a = []
         situation_order_b = []
-        # Which structure-of-dependence variation was used each round: "1" =
-        # outcomes independently shuffled per alternative (dependence broken
-        # up); "2.1"/"2.2" = one of the two fixed pairings from Distributions.xlsx
-        # (dependence preserved, only situation order randomized). Drawn per
-        # round with 50% / 25% / 25% probability respectively.
+
+        # Which structure-of-dependence variation was used each round: 
+        # "1" = outcomes independently shuffled per alternative (dependence broken up)
+        # "2.1"/"2.2" = one of the two fixed pairings 
+        # Drawn per round with 50% / 25% / 25% probability respectively.
+
         dependence_variation = []
         for i in range(TaskC.NUM_ROUNDS):
             AorB = random.choice([0, 1])
@@ -358,12 +300,6 @@ def creating_session(subsession):
                 values_a = [pair[AorB] for pair in tuples]
                 values_b = [pair[1 - AorB] for pair in tuples]
 
-                # Independently permute which original row's outcome lands in
-                # which displayed situation, once per alternative - this is what
-                # breaks the original row's [option_1, option_2] pairing (mirrors
-                # the two independent SORTBY(..., RANDARRAY(...)) formulas per
-                # distribution in Distributions.xlsx's "All" sheet, "Variation 1"
-                # block).
                 order_a = list(range(1, num_situations + 1))
                 random.shuffle(order_a)
                 order_b = list(range(1, num_situations + 1))
@@ -374,10 +310,6 @@ def creating_session(subsession):
                 payoffsA.append([values_a[r - 1] for r in order_a])
                 payoffsB.append([values_b[r - 1] for r in order_b])
             else:
-                # "Variation 2.1"/"2.2": a fixed [option_1, option_2] pairing, read
-                # straight from the matching "All" sheet block (SPOT 1). Only the
-                # situation order is randomized - both alternatives share that one
-                # order, since their outcomes stay locked together.
                 locked_variations = locked_21_variations if variation == "2.1" else locked_22_variations
                 tuples = list(locked_variations[tuples_order[i]])
 
@@ -388,6 +320,7 @@ def creating_session(subsession):
                 situation_order_b.append(order)
                 payoffsA.append([tuples[r - 1][AorB] for r in order])
                 payoffsB.append([tuples[r - 1][1 - AorB] for r in order])
+
         # "Initial wealth" offset added to bonus payoffs
         drawn_payoffs = [v for lst in payoffsA + payoffsB for v in lst]
         wealth_W = max(0, -min(drawn_payoffs))
@@ -411,8 +344,9 @@ def creating_session(subsession):
             player.iamx1 = order_images[0]
             player.iamx2 = order_images[1]
             player.iamx3 = order_images[2]
+
 # 2x2x2 design, balanced once per group of 8:
-# chart display treatment: sequential_joint reveals situations one at a time; simultaneous_joint shows all situations at once.
+# chart display treatment: sequential_joint vs simultaneous_joint
             if player in players[:4]:
                 player.participant.treatment = "sequential_joint"
             else:
@@ -424,7 +358,8 @@ def creating_session(subsession):
                 player.participant.incentive = "beliefs"
             else:
                 player.participant.incentive = "choice"
-# stakes: low keeps payoffs as generated above; high scales them by STAKES_FACTOR_F * (lower bound of the participant's answerto STAKES_SOURCE_FIELD on Elicit_Wealth). The multiplier itself is computed once that answer is known, in Elicit_Wealth.before_next_page below; default to 1 until then.
+
+# stakes: low vs high
             if player in players[:2] or player in players[4:6]:
                 player.participant.stakes = "low"
             else:
@@ -432,7 +367,7 @@ def creating_session(subsession):
             player.participant.stakes_multiplier = 1
             player.participant.belieftable = 1
             player.participant.bonusperiod = random.randint(1, 10)
-            # independent per-participant coin flip (not part of the 2x2x2 design above): 0 = payoff bars are color-coded red/green for loss/gain,1 = bars keep their current neutral per-asset color.
+            # independent per-participant coin flip (not part of the 2x2x2 design above): 0 = color-coded, 1 = neutral color.
             player.participant.color_treatment = random.randint(0, 1)
 
 # PAGES
@@ -629,9 +564,6 @@ class AttentionCheckResult(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        # All 4 checks are now shown to every participant (not just one), so
-        # passing requires getting all 4 right, not just whichever one used to
-        # be randomly assigned.
         player.checks = int(
             player.attention1 == 1
             and player.attention2 == 1
@@ -649,9 +581,7 @@ class Instructions(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        # Wealth is expressed on the same scale as the outcomes the participant
-        # sees (i.e. scaled by the same stakes multiplier), so "wealth + outcome"
-        # is a same-units sum for both stakes groups.
+        # Wealth is expressed on the same scale as the outcomes the participant sees (i.e. scaled by the same stakes multiplier)
         multiplier = player.participant.stakes_multiplier
         return dict(
             wealth_W=f"{player.participant.wealth_W * multiplier:.2f}",
@@ -659,5 +589,5 @@ class Instructions(Page):
         )
 
 page_sequence = [Welcome, LeavePage, ProlificID, BotScreening, AttentionCheck1, AttentionCheck2, AttentionCheck3, AttentionCheck4, AttentionCheckResult, Elicit_Wealth, Instructions]
-#page_sequence = [Welcome, LeavePage, ProlificID, Instructions]
+
 

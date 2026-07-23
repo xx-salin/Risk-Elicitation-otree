@@ -10,23 +10,17 @@ class C(BaseConstants):
     NAME_IN_URL = 'demographics'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
-    # Holt & Laury (2002) multiple price list: 10 decisions between a "safe" lottery (Option A) and a "risky" lottery (Option B). The probability of the high payoff rises from 10% to 100% in steps of 10% as the decision number increases; the payoffs themselves stay fixed across all 10 rows.
+
+    # Holt & Laury (2002) multiple price list: 10 decisions between a "safe" lottery (Option A) and a "risky" lottery (Option B). 
+    # The probability of the high payoff rises from 10% to 100% in steps of 10% as the decision number increases; the payoffs themselves stay fixed across all 10 rows.
     HL_NUM_CHOICES = 10
-    # Original Holt & Laury (2002) amounts (A: 2.00/1.60, B: 3.85/0.10) scaled by 4/7.55 and rounded to the nearest penny, so the mean of the 4 possible payoffs is exactly £1.00 while keeping the same EV crossover point.
     HL_PAYOFFS = {'A': [1.06, 0.85], 'B': [2.04, 0.05]}
 
     # BRET, Crosetto & Filippin (2013). 
-    # config.py (dynamic=False, random=False, devils_game=True, undoable=False).
-    # reimplemented as a single round with plain HTML/JS rather than the original Angular-based library, to match this project's other pages.
     BRET_NUM_BOXES = 50
     BRET_BOX_VALUE = 0.04
 
-    # Eckel & Grossman (2002) single choice list: one choice among EG_NUM_LOTTERIES
-    # paired lotteries, each paying a "low" or "high" amount with 50/50 probability.
-    # Expected value and spread both increase monotonically down the list, from a
-    # risk-free option (lottery 1: low == high) to the riskiest. Reimplemented from
-    # scl-master's config.py (num_lotteries=5, risk_loving=False), rescaled to this
-    # study's £ stakes.
+    # Eckel & Grossman (2002) single choice list: one choice among EG_NUM_LOTTERIES paired lotteries, each paying a "low" or "high" amount with 50/50 probability.
     EG_NUM_LOTTERIES = 5
     EG_SURE_PAYOFF = 1.00
     EG_DELTA_LO = 0.25
@@ -85,8 +79,6 @@ class Player(BasePlayer):
         blank = True,
     )
 
-    # Which single risk elicitation method this participant sees, drawn once
-    # (demographics.before_next_page below): 'HoltLaury', 'BRET', or 'EckelGrossman'.
     risk_task = models.StringField()
 
     # Holt-Laury: one field per decision row, 0 = Option A (safe), 1 = Option B (risky)
@@ -100,12 +92,12 @@ class Player(BasePlayer):
     hl_choice_8 = models.IntegerField(choices=[[0, 'Option A'], [1, 'Option B']], widget=widgets.RadioSelect, label='')
     hl_choice_9 = models.IntegerField(choices=[[0, 'Option A'], [1, 'Option B']], widget=widgets.RadioSelect, label='')
     hl_choice_10 = models.IntegerField(choices=[[0, 'Option A'], [1, 'Option B']], widget=widgets.RadioSelect, label='')
-    # Number of Option A ("safe") choices out of 10, and the corresponding
-    # Holt & Laury (2002) Table 3 risk-preference classification.
+
+    # Number of Option A ("safe") choices out of 10, and the corresponding Holt & Laury (2002) Table 3 risk-preference classification.
     hl_num_safe_choices = models.IntegerField()
     hl_risk_category = models.StringField()
-    # Bonus payment: one decision is randomly drawn and paid out according to
-    # the player's choice on that decision and a probability-weighted draw.
+
+    # Bonus payment: one decision is randomly drawn and paid out according to the player's choice on that decision and a probability-weighted draw.
     hl_index_to_pay = models.IntegerField()
     hl_option_chosen = models.StringField()
     hl_payoff = models.FloatField()
@@ -117,7 +109,7 @@ class Player(BasePlayer):
     bret_bomb_hit = models.BooleanField(blank=True)
     bret_payoff = models.FloatField(blank=True)
 
-    # Eckel-Grossman: index (1..EG_NUM_LOTTERIES) of the single lottery chosen.
+    # Eckel-Grossman: index of the single lottery chosen.
     eg_lottery_choice = models.IntegerField(min=1, max=C.EG_NUM_LOTTERIES, label='')
     eg_outcome_lo = models.FloatField(blank=True)
     eg_outcome_hi = models.FloatField(blank=True)
@@ -156,8 +148,7 @@ class demographics(Page):
 
     @staticmethod
     def before_next_page(player, timeout_happened):
-        # Draw which single risk elicitation method this participant will see,
-        # once, right before entering that block of pages.
+        # Draw single risk elicitation method
         player.risk_task = random.choice(['HoltLaury', 'BRET', 'EckelGrossman'])
 
 
@@ -198,9 +189,7 @@ class HoltLaury(Page):
         player.hl_num_safe_choices = num_safe
         player.hl_risk_category = classify_hl_risk(num_safe)
 
-        # Draw the paid decision: pick one of the 10 rows at random, look up
-        # which option the player chose on that row, then draw the high/low
-        # payoff for that option using that row's probability of the high payoff.
+        # Draw the paid decision: pick one of the 10 rows at random, look up payoff for player's option using that row's probability of the high payoff.
         index_to_pay = random.randint(1, C.HL_NUM_CHOICES)
         option_chosen = getattr(player, f'hl_choice_{index_to_pay}')
         prob_high = index_to_pay / C.HL_NUM_CHOICES
@@ -222,8 +211,7 @@ class BRET(Page):
 
     @staticmethod
     def vars_for_template(player):
-        # Draw (and freeze) the bomb's position the first time this page is
-        # displayed, so a page reload doesn't move the bomb mid-decision.
+        # Draw (and freeze) the bomb's position the first time this page is displayed, so a page reload doesn't move the bomb mid-decision.
         if player.field_maybe_none('bret_bomb_index') is None:
             player.bret_bomb_index = random.randint(1, C.BRET_NUM_BOXES)
         return dict(
@@ -231,11 +219,6 @@ class BRET(Page):
             num_boxes=C.BRET_NUM_BOXES,
             box_value=f"{C.BRET_BOX_VALUE:.2f}",
             max_payoff=f"{C.BRET_NUM_BOXES * C.BRET_BOX_VALUE:.2f}",
-            # Sent to the client so the box that explodes can be revealed to the
-            # player immediately on click (matching oTree_BRET-master's reference
-            # implementation, which likewise determines/reveals the bomb client-side).
-            # This is the same value before_next_page uses to score the round, so
-            # the live reveal always matches what's actually paid.
             bomb_index=player.bret_bomb_index,
         )
 
@@ -288,11 +271,6 @@ class completioncode(Page):
 
     @staticmethod
     def vars_for_template(player):
-        # Actual payment always uses the base (unscaled) amounts, regardless
-        # of stakes condition: the high-stakes multiplier only affects what
-        # is *displayed* to the participant during the task (the chart, the
-        # guess questions), not what they are actually paid. This keeps
-        # real payouts identical across stakes conditions.
         incentive = player.participant.incentive
         asset = None
         if incentive == "beliefs":
@@ -304,17 +282,10 @@ class completioncode(Page):
             else:
                 payoffs = player.participant.payoffsB[player.participant.bonusperiod-1]
                 asset = "Asset B"
-            # Add the initial-wealth offset (see setup/Instructions.html) so a loss
-            # situation never results in a negative bonus payment. This offset is
-            # deliberately stakes-independent: for the "high" stakes group the
-            # displayed outcome and displayed wealth are both scaled up by the same
-            # multiplier and then that multiplier is divided back out, so the real
-            # payment here works out the same as for the "low" stakes group.
+            # Add the initial-wealth offset (see setup/Instructions.html) so a loss situation never results in a negative bonus payment.
             task_bonus = payoffs[player.participant.random_draw] + player.participant.wealth_W
 
-        # Only one of the three risk elicitation methods (demographics.before_next_page)
-        # was actually shown to this participant - pull the bonus (and the details
-        # needed to explain it) from whichever one that was.
+        # pull bonus payment from shown risk elicitation method
         risk_task = player.risk_task
         if risk_task == 'HoltLaury':
             risk_bonus = player.hl_payoff
@@ -323,8 +294,7 @@ class completioncode(Page):
         else:
             risk_bonus = player.eg_payoff
 
-        # Total = task-app bonus (belief accuracy or investment choice, depending
-        # on the incentive condition) + the one risk-task bonus.
+        # Total = task-app bonus (belief accuracy or investment choice, depending on the incentive condition) + the one risk-task bonus.
         total_bonus = task_bonus + risk_bonus
 
         return dict(
