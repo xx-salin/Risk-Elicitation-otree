@@ -113,6 +113,11 @@ class Player(BasePlayer):
         choices=range(1, 6),
         widget=widgets.RadioSelectHorizontal()
     )
+    ChoiceFrequencyOutperformance = models.IntegerField(
+        label='When making your choices, to what extent did you rely on how often one asset did better than the other asset? Select a category between 1 ("Not at all") and 5 ("A lot").',
+        choices=range(1, 6),
+        widget=widgets.RadioSelectHorizontal()
+    )
 
     #botscreening
     attention3 = models.IntegerField(initial=2)
@@ -383,7 +388,7 @@ class NextRound(Page):
 
 class Final_Questions(Page):
     form_model = "player"
-    form_fields = ["ChoiceAvrgReturn","ChoiceVolatility", "ChoiceExtreme"]
+    form_fields = ["ChoiceAvrgReturn","ChoiceVolatility", "ChoiceExtreme", "ChoiceFrequencyOutperformance"]
 
     @staticmethod
     def is_displayed(player: Player):
