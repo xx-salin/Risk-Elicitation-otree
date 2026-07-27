@@ -15,9 +15,6 @@ class C(BaseConstants):
     # 8 so that every cell of the 2x2x2 design (treatment x incentive x stakes) appears once per group.
     PLAYERS_PER_GROUP = 8
     NUM_ROUNDS = 1
-    #attentionchecks
-    SAMPLE_FRUITS = ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P']
-    SAMPLE_IAMX = [1, 2, 3]
     # elicit_wealth
     CURRENCIES = {'AUD': 'A$', 'GBP': '£', 'EUR': '€', 'USD': '$'}
     DEFAULT_CURRENCY = 'GBP'  # ADJUST THIS ONE
@@ -48,26 +45,16 @@ class Player(BasePlayer):
     #attentionchecks
     attention1 = models.IntegerField(initial=2)
     attention2 = models.IntegerField(initial=2)
-    attention3 = models.IntegerField(initial=2)
-    attention4 = models.IntegerField(initial=2)
     checks = models.IntegerField(initial=2)
-    honolulu = models.StringField(
-        label='Please type the word above into the space below:', max_length=8
+    lines = models.IntegerField(
+        label="Which of the two lines above is longer?",
+        choices=[[1, "Blue Line"], [2, "Red Line"], [3, "None (they are the same)"]],
+        widget=widgets.RadioSelect(),
     )
-    fruit = models.StringField(initial='blank')
-    answer_fruit = models.StringField(label='', max_length=1)
-    iamx1 = models.IntegerField(initial=0)
-    iamx2 = models.IntegerField(initial=0)
-    iamx3 = models.IntegerField(initial=0)
-    answer_iamx = models.IntegerField(
-        label='Which of the sentences above most accurately describes you?',
-        choices=[1, 2, 3],
-        widget=widgets.RadioSelect,
-    )
-    answer_her = models.IntegerField(
-        label='',
-        choices=[[1, "Tatyana's mother"], [2, "Grandma"], [3, "Tatyana"]],
-        widget=widgets.RadioSelect,
+    cafewall = models.IntegerField(
+        label="Are all the gray lines above perfectly straight/horizontal or slanted/diagonal?",
+        choices=[[1, "Straight/Horizontal"], [2, "Slanted/Diagonal"]],
+        widget=widgets.RadioSelect(),
     )
 
     # elicit_wealth
@@ -338,12 +325,6 @@ def creating_session(subsession):
             player.participant.tail_thres_l = tail_thres_l_list
             player.participant.tail_thres_h = tail_thres_h_list
             player.participant.wealth_W = wealth_W
-            player.fruit = random.choice(C.SAMPLE_FRUITS)
-            order_images = C.SAMPLE_IAMX.copy()
-            random.shuffle(order_images)
-            player.iamx1 = order_images[0]
-            player.iamx2 = order_images[1]
-            player.iamx3 = order_images[2]
 
 # 2x2x2 design, balanced once per group of 8:
 # chart display treatment: sequential_joint vs simultaneous_joint
@@ -430,147 +411,39 @@ class ProlificID(Page):
         #player.participant.payoffsB = arrays[1]
         return player.round_number==1
 
-class BotScreening(Page):
-    form_model = "player"
+class PageA1(Page):
+    form_model = 'player'
+    form_fields = ['lines']
 
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
 
-class AttentionCheck1(Page):
-    form_model = 'player'
-    form_fields = ['honolulu']
-
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        answer1 = player.honolulu
-        if answer1.upper() == "HONOLULU":
+        if player.lines == 1:
             player.attention1 = 1
         else:
             player.attention1 = 0
 
+class PageA2(Page):
+    form_model = 'player'
+    form_fields = ['cafewall']
+
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
 
-class AttentionCheck2(Page):
-    form_model = 'player'
-    form_fields = ['answer_fruit']
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        fruitletter = dict(
-            dict(
-                zip(
-                    ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P'],
-                    [
-                        'apple',
-                        'strawberry',
-                        'mango',
-                        'raspberry',
-                        'blueberry',
-                        'blackberry',
-                        'avocado',
-                        'tangerine',
-                    ],
-                )
-            )
-        )
-        for i in fruitletter:
-            if player.fruit == i:
-                return dict(
-                    fruit = fruitletter.get(i),
-                )
-
-    @staticmethod
-    def js_vars(player: Player):
-        fruitletter = dict(
-            dict(
-                zip(
-                    ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P'],
-                    [
-                        'apple',
-                        'strawberry',
-                        'mango',
-                        'raspberry',
-                        'blueberry',
-                        'blackberry',
-                        'avocado',
-                        'tangerine',
-                    ],
-                )
-            )
-        )
-
-        for i in fruitletter:
-            if player.fruit == i:
-                return dict(
-                    fruit=fruitletter.get(i),
-                    fruitletter=fruitletter,
-                )
-
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        if player.fruit == player.answer_fruit.upper():
+        if player.cafewall == 2:
             player.attention2 = 1
         else:
             player.attention2 = 0
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
-
-class AttentionCheck3(Page):
-    form_model = 'player'
-    form_fields = ['answer_iamx']
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        images = dict(
-            dict(zip(['human', 'lion', 'rabbit'], [player.iamx1, player.iamx2, player.iamx3]))
-        )
-        return {'images': images,}
-
-    @staticmethod
-    def before_next_page(player: Player, timeout_happened):
-        if player.iamx1 == player.answer_iamx:
-            player.attention3 = 1
+        if player.attention1 == 1 and player.attention2 == 1:
+            player.checks = 1
         else:
-            player.attention3 = 0
-
-
-class AttentionCheck4(Page):
-    form_model = 'player'
-    form_fields = ['answer_her']
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
-
-    @staticmethod
-    def before_next_page(player: Player, timeout_happened):
-        if player.answer_her == 1:
-            player.attention4 = 1
-        else:
-            player.attention4 = 0
-
-
-class AttentionCheckResult(Page):
-    form_model = "player"
-
-    @staticmethod
-    def is_displayed(player: Player):
-        player.checks = int(
-            player.attention1 == 1
-            and player.attention2 == 1
-            and player.attention3 == 1
-            and player.attention4 == 1
-        )
-        return player.round_number == 1
+            player.checks = 0
 
 class Instructions(Page):
     form_model = "player"
@@ -588,6 +461,6 @@ class Instructions(Page):
             stakes_factor=f"{multiplier:.2f}",
         )
 
-page_sequence = [Welcome, LeavePage, ProlificID, BotScreening, AttentionCheck1, AttentionCheck2, AttentionCheck3, AttentionCheck4, AttentionCheckResult, Elicit_Wealth, Instructions]
+page_sequence = [Welcome, LeavePage,ProlificID, PageA1, PageA2, Elicit_Wealth, Instructions]
 
 

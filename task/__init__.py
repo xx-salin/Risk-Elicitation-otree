@@ -1,6 +1,7 @@
 from otree.api import *
 import random
 import math
+import ast
 
 doc = """ Public Learning """
 
@@ -9,6 +10,8 @@ class C(BaseConstants):
     NAME_IN_URL = 'task'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 10
+    #botscreening
+    COMPLICATED_WORDS = ['Schadenfreude', 'Bourgeoisie', 'Worcestershire']
 
 
 class Subsession(BaseSubsession):
@@ -110,6 +113,16 @@ class Player(BasePlayer):
         choices=range(1, 6),
         widget=widgets.RadioSelectHorizontal()
     )
+
+    #botscreening
+    attention3 = models.IntegerField(initial=2)
+    can = models.StringField(
+        label="What color is the can depicted above?",
+        max_length=6
+    )
+    words = models.StringField()
+    AI_Test2 = models.StringField(label='', initial='[]')
+    ComplicatedWord_Corrections = models.IntegerField(initial=0)
 
 # FUNCTIONS
 pass
@@ -372,4 +385,53 @@ class Final_Questions(Page):
 
 
 
-page_sequence = [Start, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions]
+# Bot and AI checks
+
+class PageB1(Page):
+    form_model = 'player'
+    form_fields = ['can']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == C.NUM_ROUNDS
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        answer1 = player.can
+        if answer1.upper() == "RED":
+            player.attention3 = 1
+        else:
+            player.attention3 = 0
+
+
+class PageB2(Page):
+    form_model = 'player'
+    form_fields = ['words']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == C.NUM_ROUNDS
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'insertWord': ', '.join(C.COMPLICATED_WORDS)}
+
+    @staticmethod
+    def live_method(player, data):
+        tmpEntry = ast.literal_eval(player.AI_Test2)
+        tmpEntry.append(data[0])
+        player.AI_Test2 = str(tmpEntry)
+
+        if data[1].startswith("delete"):
+            player.ComplicatedWord_Corrections += 1
+
+
+class BotScreening(Page):
+    form_model = "player"
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == C.NUM_ROUNDS
+
+
+page_sequence = [Start, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions, PageB1, PageB2, BotScreening]

@@ -1,0 +1,38 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+{% block styles %}
+<style>
+     .custom-border {
+        border-color: #d6d8db;
+    }
+ </style>
+{% endblock %}
+{% block title %}
+    Attention Check
+{% endblock %}
+
+{% block content %}
+<div class="container bg-light border custom-border" style="padding-left:30px; padding-right:30px">
+    <br>
+    <p>
+        <img src="{% static 'setup/lines.png' %}" width="500px" />
+    </p>
+
+    <p>
+        {% formfields %}
+    </p>
+
+    <p>
+    <!-- .otree-btn-next is the CSS/jQuery selector for this button -->
+    <button class="otree-btn-next btn btn-primary">Next</button>
+    </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+        document.querySelector('input[name="lines"]').checked = true;
+    }
+</script>
+{% endblock %}
