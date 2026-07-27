@@ -15,6 +15,12 @@
         var maxValue = {{ max_value }}; // Get maximum value for the player
         var minValue = - maxValue;
 
+        // Format a payoff as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
+        function formatPayoffCurrency(value) {
+            var sign = value < 0 ? '-' : '';
+            return sign + '£' + Highcharts.numberFormat(Math.abs(value), 2, '.', ' ');
+        }
+
         var absMaxFund = Math.max(...DataFund.map(Math.abs)); // Get absolute maximum from DataFund
         var absMaxBenchmark = Math.max(...DataBenchmark.map(Math.abs)); // Get absolute maximum from DataBenchmark
 
@@ -120,8 +126,8 @@ function createChart() {
                 },
                 enabled:true,
                 formatter: function(){
-                    // Add a pound symbol and format the value to two decimal places
-                    return '£' + this.value.toFixed(2);
+                    // Add a pound symbol and thousands separator, and format the value to two decimal places
+                    return formatPayoffCurrency(this.value);
                 }
             },
             min: 0,
@@ -186,7 +192,7 @@ function createChart() {
                 var month = situations[this.x % situations.length]; // Ensure it cycles through the situations
                 return this.points.reduce(function (s, point) {
                     return s + '<br/>' + point.series.name + ': <b>' +
-                        Highcharts.numberFormat(point.y, 2, '.', ',') + '</b>';
+                        Highcharts.numberFormat(point.y, 2, '.', ' ') + '</b>';
                 }, '<b>' + month + '</b>'); // Display the month in bold as the header
             },
             shared: true

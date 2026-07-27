@@ -1,5 +1,6 @@
 import random
 from otree.api import *
+from formatting import format_currency
 
 doc = """
 Your app description
@@ -301,17 +302,17 @@ class completioncode(Page):
             incentive=incentive,
             bonus_period=player.participant.bonusperiod,
             asset=asset,
-            task_bonus=f"{task_bonus:.2f}",
+            task_bonus=format_currency(task_bonus),
             risk_task=risk_task,
-            risk_bonus=f"{risk_bonus:.2f}",
+            risk_bonus=format_currency(risk_bonus),
             hl_index_to_pay=player.hl_index_to_pay if risk_task == 'HoltLaury' else None,
             hl_option_chosen=player.hl_option_chosen if risk_task == 'HoltLaury' else None,
             bret_boxes_collected=player.bret_boxes_collected if risk_task == 'BRET' else None,
             bret_bomb_hit=player.bret_bomb_hit if risk_task == 'BRET' else None,
-            bret_box_value=f"{C.BRET_BOX_VALUE:.2f}",
+            bret_box_value=format_currency(C.BRET_BOX_VALUE),
             eg_lottery_choice=player.eg_lottery_choice if risk_task == 'EckelGrossman' else None,
             eg_outcome_to_pay=player.eg_outcome_to_pay if risk_task == 'EckelGrossman' else None,
-            total_bonus=f"{total_bonus:.2f}",
+            total_bonus=format_currency(total_bonus),
         )
 
 page_sequence = [demographics, HoltLaury, BRET, EckelGrossman, completioncode]

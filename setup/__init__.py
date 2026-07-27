@@ -2,7 +2,8 @@ from otree.api import *
 import random
 from pathlib import Path
 from openpyxl import load_workbook
-from task import C as TaskC 
+from task import C as TaskC
+from formatting import format_currency
 
 doc = """
 Your app description
@@ -464,7 +465,7 @@ class Instructions(Page):
         # Wealth is expressed on the same scale as the outcomes the participant sees (i.e. scaled by the same stakes multiplier)
         multiplier = player.participant.stakes_multiplier
         return dict(
-            wealth_W=f"{player.participant.wealth_W * multiplier:.2f}",
+            wealth_W=format_currency(player.participant.wealth_W * multiplier, symbol=C.DEFAULT_CURRENCY_SYMBOL),
             stakes_factor=f"{multiplier:.2f}",
         )
 

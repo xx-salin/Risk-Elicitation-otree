@@ -58,7 +58,7 @@
         You will be informed about the selected round and your exact payment at the end of the experiment.
         <br>
         <br>
-        Some situations result in a loss rather than a gain. Imagine you start out with an initial wealth of £{{ wealth_W }}. Your bonus payment is this wealth plus the
+        Some situations result in a loss rather than a gain. Imagine you start out with an initial wealth of {{ wealth_W }}. Your bonus payment is this wealth plus the
         outcome you see for your chosen asset in the randomly selected round and situation.
         {{ else }}
         The exact amount of the bonus payment depends on your guesses.
@@ -71,7 +71,7 @@
     </p>
     {{ if player.participant.stakes == "high" and player.participant.incentive == "choice" }}
     <p>
-        Note: The payoffs shown to you (and the £{{ wealth_W }} starting wealth mentioned above) have been scaled up
+        Note: The payoffs shown to you (and the {{ wealth_W }} starting wealth mentioned above) have been scaled up
         by a fixed factor of {{ stakes_factor }}. Your actual bonus payment is calculated by adding your starting
         wealth to the outcome you see, and then dividing that sum by this same factor, so you are paid the unscaled amount.
     </p>

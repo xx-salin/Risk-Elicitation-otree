@@ -2,6 +2,7 @@ from otree.api import *
 import random
 import math
 import ast
+from formatting import format_currency
 
 doc = """ Public Learning """
 
@@ -168,7 +169,7 @@ class Payoffs_Together(Page):
         arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
 
         def fmt2(x):
-            return f"{x:.2f}"
+            return format_currency(x)
 
         def pct0(x):
             return f"{x:.0%}"
@@ -250,8 +251,8 @@ class Expectations(Page):
             round_number = player.round_number,
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
-            freq_thres_h = f"{player.participant.freq_thres_h[player.round_number-1] * multiplier:.2f}",
+            freq_thres_l = format_currency(player.participant.freq_thres_l[player.round_number-1] * multiplier),
+            freq_thres_h = format_currency(player.participant.freq_thres_h[player.round_number-1] * multiplier),
         )
 
     @staticmethod
@@ -279,8 +280,8 @@ class Expectations_Choice(Page):
         return dict(
             average_guess_min = f"{-2.2 * multiplier:.2f}",
             average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = f"{player.participant.freq_thres_l[player.round_number-1] * multiplier:.2f}",
-            freq_thres_h = f"{player.participant.freq_thres_h[player.round_number-1] * multiplier:.2f}",
+            freq_thres_l = format_currency(player.participant.freq_thres_l[player.round_number-1] * multiplier),
+            freq_thres_h = format_currency(player.participant.freq_thres_h[player.round_number-1] * multiplier),
             round_number = player.round_number,
         )
 

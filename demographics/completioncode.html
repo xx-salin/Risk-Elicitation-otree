@@ -28,7 +28,7 @@
             {{ endif }}
         </p>
         <p class="mb-0">
-            Task bonus: <b>£{{ task_bonus }}</b>
+            Task bonus: <b>{{ task_bonus }}</b>
         </p>
     </div>
 </div>
@@ -48,7 +48,7 @@
                     bomb was among them, so this task pays £0.00.
                 {{ else }}
                     In the bomb risk task, you collected {{ bret_boxes_collected }} boxes before stopping and
-                    avoided the bomb, earning £{{ bret_box_value }} for each box collected.
+                    avoided the bomb, earning {{ bret_box_value }} for each box collected.
                 {{ endif }}
             {{ endif }}
             {{ if risk_task == "EckelGrossman" }}
@@ -57,15 +57,15 @@
             {{ endif }}
         </p>
         <p class="mb-0">
-            Risk task bonus: <b>£{{ risk_bonus }}</b>
+            Risk task bonus: <b>{{ risk_bonus }}</b>
         </p>
     </div>
 </div>
 
 <div class="alert alert-primary">
     <p class="mb-0">
-        <b>Total bonus payment: £{{ total_bonus }}</b>
-        (£{{ task_bonus }} task bonus + £{{ risk_bonus }} risk task bonus)
+        <b>Total bonus payment: {{ total_bonus }}</b>
+        ({{ task_bonus }} task bonus + {{ risk_bonus }} risk task bonus)
     </p>
 </div>
 

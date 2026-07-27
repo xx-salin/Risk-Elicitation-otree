@@ -74,21 +74,21 @@
             <tbody>
                 <tr>
                     <th style="text-align: left;">Average payoff:</th>
-                    <td>£{{ averageA }}</td>
-                    <td>£{{ averageB }}</td>
+                    <td>{{ averageA }}</td>
+                    <td>{{ averageB }}</td>
                 </tr>
                 <tr>
                     <th style="text-align: left;">Variation in payoffs:</th>
-                    <td>£{{ stdA }}</td>
-                    <td>£{{ stdB }}</td>
+                    <td>{{ stdA }}</td>
+                    <td>{{ stdB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs below £{{ below_threshold }}:</th>
+                    <th style="text-align: left;">Frequency of payoffs below {{ below_threshold }}:</th>
                     <td>{{ belowA }}</td>
                     <td>{{ belowB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs above £{{ above_threshold }}:</th>
+                    <th style="text-align: left;">Frequency of payoffs above {{ above_threshold }}:</th>
                     <td>{{ aboveA }}</td>
                     <td>{{ aboveB }}</td>
                 </tr>
@@ -125,6 +125,13 @@
     <script>
         var animationtime = {{animation_time}};
         var colorTreatment = {{ color_treatment }};
+
+        // Format a payoff as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
+        function formatPayoffCurrency(value) {
+            var sign = value < 0 ? '-' : '';
+            return sign + '£' + Highcharts.numberFormat(Math.abs(value), 2, '.', ' ');
+        }
+
         {% if player.treatment == "sequential_joint" %}
         {% include "_static/Graph_Together_Sequential.js" %}
         {% else %}

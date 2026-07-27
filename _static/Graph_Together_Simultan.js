@@ -111,7 +111,8 @@ $(function () {
                 },
                 enabled:true,
                 formatter: function(){
-                    return this.value;
+                    // Add a pound symbol and thousands separator, and format the value to two decimal places
+                    return formatPayoffCurrency(this.value);
                 }
             },
             min: -yMax,
@@ -206,7 +207,7 @@ $(function () {
                 var s = '';
                 $.each(this.points, function (i, point) {
                     var label = i === 0 ? fundLabels[x] : benchmarkLabels[x];
-                    s += point.series.name + ': Situation ' + label + ', Payoff <b>' + Highcharts.numberFormat(point.y, 2, '.', ',') + '</b><br>';
+                    s += point.series.name + ': Situation ' + label + ', Payoff <b>' + formatPayoffCurrency(point.y) + '</b><br>';
                 });
                 return s;
             },

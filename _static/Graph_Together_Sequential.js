@@ -127,8 +127,8 @@ function createChart() {
                 },
                 enabled:true,
                 formatter: function(){
-                    // Add a pound symbol and format the value to two decimal places
-                    return '£' + this.value.toFixed(2);
+                    // Add a pound symbol and thousands separator, and format the value to two decimal places
+                    return formatPayoffCurrency(this.value);
                 }
             },
             min: -yMax,
@@ -193,7 +193,7 @@ function createChart() {
                 var month = situations[this.x % situations.length]; // Ensure it cycles through the situations
                 return this.points.reduce(function (s, point) {
                     return s + '<br/>' + point.series.name + ': <b>' +
-                        Highcharts.numberFormat(point.y, 2, '.', ',') + '</b>';
+                        Highcharts.numberFormat(point.y, 2, '.', ' ') + '</b>';
                 }, '<b>' + month + '</b>'); // Display the month in bold as the header
             },
             shared: true
