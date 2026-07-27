@@ -3,7 +3,7 @@ import random
 from pathlib import Path
 from openpyxl import load_workbook
 from task import C as TaskC
-from formatting import format_currency
+
 
 doc = """
 Your app description
@@ -121,6 +121,14 @@ class Player(BasePlayer):
 
 
 # FUNCTIONS
+
+def format_currency(value, symbol='£', decimals=2):
+    """Format a number as currency with a space as the thousands separator,
+    e.g. 1000 -> '£1 000.00', -20000 -> '-£20 000.00'."""
+    negative = value < 0
+    grouped = f"{abs(value):,.{decimals}f}".replace(',', ' ')
+    return f"{'-' if negative else ''}{symbol}{grouped}"
+
 
 
 # SPOT 1: to change the marginal outcomes for a distribution edit the numbers directly in Distributions.xlsx 
