@@ -445,6 +445,13 @@ class PageA2(Page):
         else:
             player.checks = 0
 
+class PageA3(Page):
+    form_model = "player"
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == 1
+
 class Instructions(Page):
     form_model = "player"
 
@@ -461,6 +468,6 @@ class Instructions(Page):
             stakes_factor=f"{multiplier:.2f}",
         )
 
-page_sequence = [Welcome, LeavePage,ProlificID, PageA1, PageA2, Elicit_Wealth, Instructions]
+page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions]
 
 

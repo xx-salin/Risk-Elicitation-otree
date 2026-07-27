@@ -1,0 +1,71 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+
+{% block title %}
+    Attention Check Result
+{% endblock %}
+
+
+{% block content %}
+{% if player.checks == 1 %}
+    <div class="success-message">
+        <div class="checkmark">&#10004;&#65038;</div>
+        <p>Thanks! You are now ready to begin the survey.</p>
+        <p>
+            <button class="otree-btn-next btn btn-primary">Next</button>
+        </p>
+    </div>
+{% else %}
+    <div class="failure-message">
+        <div class="cross">&#10008;</div>
+        <p>
+            The study has terminated because you failed to pass the screening. <br>
+            Thank you!
+        </p>
+    </div>
+{% endif %}
+{% endblock %}
+
+
+
+{% block styles %}
+
+<style>
+    /* Custom CSS for success message */
+    .success-message {
+        border: 2px solid #d4edda;
+        background-color: #d4edda; /* Light green background */
+        color: #155724; /* Darker green text color */
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .success-message .checkmark {
+        font-size: 50px;
+        color: #28a745; /* Green color for the checkmark */
+        margin-top: 10px;
+    }
+    
+    /* Custom CSS for failure message */
+    .failure-message {
+        border: 2px solid #f8d7da;
+        background-color: #f8d7da; /* Light red background */
+        color: #721c24; /* Darker red text color */
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .failure-message .cross {
+        font-size: 50px;
+        color: #dc3545; /* Red color for the cross */
+        margin-top: 10px;
+    }
+</style>
+
+{% endblock %}
+
