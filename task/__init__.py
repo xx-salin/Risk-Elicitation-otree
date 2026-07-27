@@ -446,3 +446,4 @@ class BotScreening(Page):
 
 
 page_sequence = [Start, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions, PageB1, PageB2, BotScreening]
+

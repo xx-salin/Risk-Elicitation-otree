@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 from openpyxl import load_workbook
 from task import C as TaskC
+from settings import NUM_SITUATIONS
 
 
 doc = """
@@ -55,6 +56,35 @@ class Player(BasePlayer):
     cafewall = models.IntegerField(
         label="Are all the gray lines above perfectly straight/horizontal or slanted/diagonal?",
         choices=[[1, "Straight/Horizontal"], [2, "Slanted/Diagonal"]],
+        widget=widgets.RadioSelect(),
+    )
+
+    #comprehension check
+    comprehension_situations = models.IntegerField(
+        label='How many situations will you see per round?',
+        choices=[
+            [NUM_SITUATIONS, str(NUM_SITUATIONS)],
+            [NUM_SITUATIONS * 2, str(NUM_SITUATIONS * 2)],
+            [NUM_SITUATIONS * 3, str(NUM_SITUATIONS * 3)],
+        ],
+        widget=widgets.RadioSelect(),
+    )
+    comprehension_task = models.IntegerField(
+        label='What is your main task in this experiment?',
+        choices=[
+            [0, "Choose between the two assets in each round."],
+            [1, "Guess different payoffs for the two assets in each round."],
+            [2, "Rank the ten rounds from most to least risky."],
+        ],
+        widget=widgets.RadioSelect(),
+    )
+    comprehension_bonus = models.IntegerField(
+        label='How is your bonus payment determined?',
+        choices=[
+            [0, "One round is randomly selected, and a situation is drawn from equally likely situations to determine the payoff of the asset you chose in that round."],
+            [1, "One of your guesses is randomly selected, and your bonus depends on how close your guess was to the correct answer."],
+            [2, "My bonus is a fixed amount and does not depend on the round, situation, or my choices/guesses."],
+        ],
         widget=widgets.RadioSelect(),
     )
 
@@ -477,6 +507,45 @@ class Instructions(Page):
             stakes_factor=f"{multiplier:.2f}",
         )
 
-page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions]
+class ComprehensionCheck(Page):
+    form_model = 'player'
+    form_fields = ['comprehension_situations', 'comprehension_task', 'comprehension_bonus']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == 1
+
+    @staticmethod
+    def _correct_answers(player: Player):
+        # Both the "main task" and "bonus" questions have a treatment-specific
+        # correct answer: option 0 for the choice condition, option 1 for beliefs.
+        correct_task_or_bonus = 0 if player.participant.incentive == "choice" else 1
+        return dict(
+            comprehension_situations=player.session.config["num_situations"],
+            comprehension_task=correct_task_or_bonus,
+            comprehension_bonus=correct_task_or_bonus,
+        )
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        correct = ComprehensionCheck._correct_answers(player)
+        return dict(
+            correct_situations=correct['comprehension_situations'],
+            correct_task=correct['comprehension_task'],
+            correct_bonus=correct['comprehension_bonus'],
+        )
+
+    @staticmethod
+    def error_message(player: Player, values):
+        correct = ComprehensionCheck._correct_answers(player)
+        errors = {
+            field: "That is not correct. Please review the instructions and try again."
+            for field, correct_value in correct.items()
+            if values[field] != correct_value
+        }
+        if errors:
+            return errors
+
+page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions, ComprehensionCheck]
 
 
