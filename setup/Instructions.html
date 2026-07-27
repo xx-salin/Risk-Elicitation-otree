@@ -80,7 +80,7 @@
     {{ if player.participant.incentive == "choice" }}
     <p>
         <button type="button" class="otree-btn-next btn btn-primary" data-offset="-1">Previous</button>
-        <button class="otree-btn-next btn btn-primary">Next</button>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="1">Next</button>
     </p>
     {{ else }}
     <p>
@@ -88,7 +88,7 @@
         <!-- "More Information" Button -->
         <button type="button" class="otree-btn-next btn btn-primary" id="infoButton">Details</button>
         <!-- Modal -->
-        <button class="otree-btn-next btn btn-primary">Next</button>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="1">Next</button>
     </p>
     <div id="myModal" class="modal">
         <div class="modal-content">
@@ -103,6 +103,23 @@
     </div>
     {{ endif }}
 </div>
+<div class="tab">
+    <p>
+    <b>Comprehension Check</b>
+    </p>
+    <p>
+        Before continuing, please answer the following questions to confirm that you understood the instructions above. You can click "Previous" if you would like to re-read them.
+    </p>
+
+    <p>
+        {{ formfields }}
+    </p>
+
+    <p>
+        <button type="button" class="otree-btn-next btn btn-primary" data-offset="-1">Previous</button>
+        <button class="otree-btn-next btn btn-primary">Next</button>
+    </p>
+</div>
 <style>
     .tab {
         display: none;
@@ -111,7 +128,9 @@
 
 <script>
 
-    let activeTab = 0;
+    // Re-open on the comprehension check tab (the last one) if it was submitted with errors,
+    // instead of resetting back to the first instructions tab.
+    let activeTab = {{ if form.errors }}2{{ else }}0{{ endif }};
     let tabs = document.getElementsByClassName('tab');
 
     function showCurrentTabOnly() {
@@ -160,6 +179,14 @@
             if (event.target === modal) {
                 modal.style.display = "none";
             }
+        }
+    </script>
+
+    <script>
+        function skipPage() {
+            document.querySelector('input[name="comprehension_situations"][value="{{ correct_situations }}"]').checked = true;
+            document.querySelector('input[name="comprehension_task"][value="{{ correct_task }}"]').checked = true;
+            document.querySelector('input[name="comprehension_bonus"][value="{{ correct_bonus }}"]').checked = true;
         }
     </script>
 

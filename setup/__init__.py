@@ -493,22 +493,6 @@ class PageA3(Page):
 
 class Instructions(Page):
     form_model = "player"
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        # Wealth is expressed on the same scale as the outcomes the participant sees (i.e. scaled by the same stakes multiplier)
-        multiplier = player.participant.stakes_multiplier
-        return dict(
-            wealth_W=format_currency(player.participant.wealth_W * multiplier, symbol=C.DEFAULT_CURRENCY_SYMBOL),
-            stakes_factor=f"{multiplier:.2f}",
-        )
-
-class ComprehensionCheck(Page):
-    form_model = 'player'
     form_fields = ['comprehension_situations', 'comprehension_task', 'comprehension_bonus']
 
     @staticmethod
@@ -516,7 +500,7 @@ class ComprehensionCheck(Page):
         return player.round_number == 1
 
     @staticmethod
-    def _correct_answers(player: Player):
+    def _correct_comprehension_answers(player: Player):
         # Both the "main task" and "bonus" questions have a treatment-specific
         # correct answer: option 0 for the choice condition, option 1 for beliefs.
         correct_task_or_bonus = 0 if player.participant.incentive == "choice" else 1
@@ -528,8 +512,12 @@ class ComprehensionCheck(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        correct = ComprehensionCheck._correct_answers(player)
+        # Wealth is expressed on the same scale as the outcomes the participant sees (i.e. scaled by the same stakes multiplier)
+        multiplier = player.participant.stakes_multiplier
+        correct = Instructions._correct_comprehension_answers(player)
         return dict(
+            wealth_W=format_currency(player.participant.wealth_W * multiplier, symbol=C.DEFAULT_CURRENCY_SYMBOL),
+            stakes_factor=f"{multiplier:.2f}",
             correct_situations=correct['comprehension_situations'],
             correct_task=correct['comprehension_task'],
             correct_bonus=correct['comprehension_bonus'],
@@ -537,7 +525,7 @@ class ComprehensionCheck(Page):
 
     @staticmethod
     def error_message(player: Player, values):
-        correct = ComprehensionCheck._correct_answers(player)
+        correct = Instructions._correct_comprehension_answers(player)
         errors = {
             field: "That is not correct. Please review the instructions and try again."
             for field, correct_value in correct.items()
@@ -546,6 +534,6 @@ class ComprehensionCheck(Page):
         if errors:
             return errors
 
-page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions, ComprehensionCheck]
+page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions]
 
 
