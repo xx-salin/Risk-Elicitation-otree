@@ -56,15 +56,17 @@
             ? [{ value: 0, color: '#dc2626' }, { color: '#16a34a' }]
             : undefined;
         var lossGainZonesB = colorTreatment === 0
-            ? [{ value: 0, fillColor: linePattern('#dc2626') }, { fillColor: linePattern('#16a34a') }]
+            ? [{ value: 0, color: linePattern('#dc2626') }, { color: linePattern('#16a34a') }]
             : undefined;
 
-        // NOTE: this must stay a plain solid color, not a pattern - the series'
-        // own color/fillColor renders on top of (and hides) the per-point zone
-        // fillColor below, so a patterned series color was blocking the
-        // red/green loss-gain zone patterns from showing on the actual bars.
-        var assetAColor = '#00BFFF';
-        var assetBColor = '#808080';
+        // Base series color: used directly as the actual bar fill in the neutral
+        // (non-color-coded) treatment, since no zones are defined there, and as
+        // the legend swatch in the color-coded treatment (where zones take over
+        // the actual bars). Both assets share the same grey; Asset A stays solid
+        // and Asset B gets the line pattern, so the fill-vs-pattern distinction
+        // (not color) is what tells them apart in both treatments alike.
+        var assetAColor = '#808080';
+        var assetBColor = linePattern('#808080');
 
         // Always outline both assets' bars in black (regardless of color treatment),
         // so a zero-payoff bar (no height/fill) is still visible.
