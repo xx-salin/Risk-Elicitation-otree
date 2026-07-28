@@ -56,7 +56,7 @@
         Your bonus payment will be based on the outcome of your chosen asset in a randomly selected situation from this round.
         You will be informed about the selected outcome and your exact payment at the end of the experiment.
         <br>
-        (For more information on your initial wealth and how your bonus payment is calculated, click the "Details" button.)
+        (For more information on how your bonus payment is calculated, click the "Details" button.)
         {{ else }}
         The exact amount of the bonus payment depends on your guesses.
         It will be based on the payoffs of the assets in one of the 10 rounds.
@@ -79,27 +79,100 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Bonus Payment Details</h2>
+            {{ if player.participant.incentive == "choice" }}
             <p>
-                {{ if player.participant.incentive == "choice" }}
-                Some situations result in a loss rather than a gain. Imagine you start out with an initial wealth of {{ wealth_W }}. Your bonus payment is this wealth plus the
-                outcome you see for your chosen asset in the randomly selected round and situation.
-                {{ if player.participant.stakes == "high" }}
-                <br>
-                Note: The payoffs shown to you (and the {{ wealth_W }} starting wealth mentioned above) have been scaled up
-                by a fixed factor of {{ stakes_factor }}. Your actual bonus payment is calculated by adding your starting
-                wealth to the outcome you see, and then dividing that sum by this same factor, so you are paid the unscaled amount.
-                {{ endif }}
-                {{ else }}
-                For some guesses you will be asked to estimate payoffs (in £) and likelihoods (in %). If the selected guess is one of these guesses and your estimate is within 5% of the correct answer, you earn the bonus payment of £2.00.
-                <br>
-                For some guesses you will be asked to choose out of several answer options. If the selected guess is one of these guesses and your chosen option is the correct one, you earn the bonus payment of £2.00.
-                {{ endif }}
+                For each choice, we take all possible outcomes for both assets and rescale them so that the worst outcome across all situations and both assets corresponds to a bonus of £0.00, the best outcome corresponds to a bonus of £2.00, and intermediate outcomes scale up/down with a constant factor.
             </p>
+            {{ if player.participant.stakes == "high" }}
+            <p>
+                For example, if the minimum outcome across all situations is <b>-£1 000</b> for Asset A in Situation 1, and the maximum outcome across all situations is <b>+£1 000</b> for Asset B in Situation 2, we rescale outcomes using the formula:
+                <br>
+                <b>Bonus = (Outcome + £1 000) / 1 000</b>
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center bg-white">
+                    <thead>
+                        <tr>
+                            <th>Example outcome</th>
+                            <th>Amount</th>
+                            <th>Bonus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Worst outcome (Asset A, Situation 1)</td>
+                            <td>-£1 000</td>
+                            <td>£0.00</td>
+                        </tr>
+                        <tr>
+                            <td>An intermediate outcome</td>
+                            <td>+£500</td>
+                            <td>£1.50</td>
+                        </tr>
+                        <tr>
+                            <td>Best outcome (Asset B, Situation 2)</td>
+                            <td>+£1 000</td>
+                            <td>£2.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                Note: The outcomes shown to you during the task have been scaled up by a fixed factor of {{ stakes_factor }}.
+            </p>
+            {{ else }}
+            <p>
+                For example, if the minimum outcome across all situations is <b>-£2.20</b> for Asset A in Situation 1, and the maximum outcome across all situations is <b>+£2.20</b> for Asset B in Situation 2, we rescale outcomes using the formula:
+                <br>
+                <b>Bonus = (Outcome + £2.20) / 2.20</b>
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center bg-white">
+                    <thead>
+                        <tr>
+                            <th>Example outcome</th>
+                            <th>Amount</th>
+                            <th>Bonus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Worst outcome (Asset A, Situation 1)</td>
+                            <td>-£2.20</td>
+                            <td>£0.00</td>
+                        </tr>
+                        <tr>
+                            <td>An intermediate outcome</td>
+                            <td>+£1.10</td>
+                            <td>£1.50</td>
+                        </tr>
+                        <tr>
+                            <td>Best outcome (Asset B, Situation 2)</td>
+                            <td>+£2.20</td>
+                            <td>£2.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {{ endif }}
+            {{ else }}
+            <p>
+                We check how accurate each of your guesses is against the correct answer, and rescale that accuracy into a bonus of £0.00 (inaccurate) or £2.00 (accurate).
+            </p>
+            <p>
+                For guesses where you estimate a payoff (in £) or a likelihood (in %), you earn a bonus of £2.00 if your estimate is within 5% of the correct answer, and £0.00 otherwise.
+            </p>
+            {{ if player.participant.stakes == "high" }}
+            <p>
+                Note: The outcomes shown to you during the task have been scaled up by a fixed factor of {{ stakes_factor }}.
+            </p>
+            {{ endif }}
+            {{ endif }}
         </div>
     </div>
 </div>
 <div class="tab">
-    <p>
+    <p> 
     <b>Comprehension Check</b>
     </p>
     <p>
