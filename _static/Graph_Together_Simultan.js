@@ -44,9 +44,36 @@
 
         // colorTreatment (set in Payoffs_Together.html): 0 = color-code bars
         // red/green for loss/gain, 1 = keep the series' own neutral color.
-        var lossGainZones = colorTreatment === 0
+        // In the color-coded treatment, both assets are red (loss) / green (gain),
+        // so Asset A stays a solid fill and Asset B is additionally given a
+        // diagonal-line pattern (in the same red/green) to tell the assets apart.
+        function linePattern(color) {
+            return {
+                pattern: {
+                    path: {
+                        d: 'M 0 10 L 10 0 M -1 1 L 1 -1 M 9 11 L 11 9',
+                        stroke: color,
+                        strokeWidth: 2
+                    },
+                    width: 10,
+                    height: 10
+                }
+            };
+        }
+
+        var lossGainZonesA = colorTreatment === 0
             ? [{ value: 0, color: '#dc2626' }, { color: '#16a34a' }]
             : undefined;
+        var lossGainZonesB = colorTreatment === 0
+            ? [{ value: 0, fillColor: linePattern('#dc2626') }, { fillColor: linePattern('#16a34a') }]
+            : undefined;
+
+        // NOTE: this must stay a plain solid color, not a pattern - the series'
+        // own color/fillColor renders on top of (and hides) the per-point zone
+        // fillColor below, so a patterned series color was blocking the
+        // red/green loss-gain zone patterns from showing on the actual bars.
+        var assetAColor = '#00BFFF';
+        var assetBColor = '#808080';
 
         // Always outline both assets' bars in black (regardless of color treatment),
         // so a zero-payoff bar (no height/fill) is still visible.
@@ -242,8 +269,8 @@ $(function () {
         {
             name: 'Asset A',
             data: chartFund,
-            color: '#00BFFF',
-            zones: lossGainZones,
+            color: assetAColor,
+            zones: lossGainZonesA,
             zoneAxis: 'y',
             borderColor: assetABorderColor,
             borderWidth: assetBorderWidth,
@@ -271,8 +298,8 @@ $(function () {
         {
             name: 'Asset B',
             data: chartBenchmark,
-            color: '#808080',
-            zones: lossGainZones,
+            color: assetBColor,
+            zones: lossGainZonesB,
             zoneAxis: 'y',
             borderColor: assetBBorderColor,
             borderWidth: assetBorderWidth,
