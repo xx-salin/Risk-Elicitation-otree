@@ -78,6 +78,7 @@ $(function () {
         xAxis: {
             type: 'linear',
             tickWidth: 0,
+            lineColor: '#000000',
             labels: {
                 style: {
                     fontSize: '14px'
@@ -101,13 +102,15 @@ $(function () {
         yAxis: {
             title: {
                 style: {
-                    fontSize: '15px'
+                    fontSize: '15px',
+                    color: '#000000'
                 },
                 text: 'Payoff'
             },
             labels: {
                 style: {
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    color: '#000000'
                 },
                 enabled:true,
                 formatter: function(){
@@ -119,13 +122,16 @@ $(function () {
             max: yMax,
             tickInterval: yTickInterval,
             plotLines: [{
-                color: 'black',
+                color: 'lightgrey',
                 width: 1,
                 value: 0,
                 zIndex: 2
             }],
+            gridLineColor: 'lightgrey',
+            lineColor: '#000000',
             lineWidth: 1,
             tickWidth: 1,
+            tickColor: 'lightgrey',
             tickLength: 5,
             opposite: false
         },
@@ -224,7 +230,8 @@ $(function () {
             floating: true,
             shadow: false,
             itemStyle: {
-                fontSize: '20px'
+                fontSize: '20px',
+                color: '#000000'
             }
         },
         exporting: {

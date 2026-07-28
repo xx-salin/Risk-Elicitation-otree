@@ -103,27 +103,33 @@ function createChart() {
         title: {
              text: 'Month',
              align: 'left',
-            x: 200
+            x: 200,
+            style: {
+                color: '#000000'
+            }
         },
         xAxis: {
             type: 'linear',
             labels: {
                 enabled: false,
             },
-            gridLineWidth: 1,
+            gridLineWidth: 0,
+            lineColor: '#000000',
             pointPlacement: 'on',
             animation: false,
         },
         yAxis: {
             title: {
                 style: {
-                    fontSize: '20px'
+                    fontSize: '20px',
+                    color: '#000000'
                 },
                 text: 'Payoff'
             },
             labels: {
                 style: {
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    color: '#000000'
                 },
                 enabled:true,
                 formatter: function(){
@@ -135,13 +141,16 @@ function createChart() {
             max: yMax,
             tickInterval: yTickInterval,
             plotLines: [{
-                color: 'black',
+                color: 'lightgrey',
                 width: 1,
                 value: 0,
                 zIndex: 2
             }],
+            gridLineColor: 'lightgrey',
+            lineColor: '#000000',
             lineWidth: 1,
             tickWidth: 1,
+            tickColor: 'lightgrey',
             tickLength: 5,
             opposite: false
         },
@@ -212,7 +221,8 @@ function createChart() {
             backgroundColor: '#f8f9fa',
             shadow: false,
             itemStyle: {
-                fontSize: '20px' // Increase the font size of the legend
+                fontSize: '20px', // Increase the font size of the legend
+                color: '#000000'
             }
         },
         exporting: {
