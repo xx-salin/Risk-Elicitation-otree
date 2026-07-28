@@ -24,17 +24,18 @@
         var maxValue = {{ max_value }}; // Get maximum value for the player
         var minValue = - maxValue;
 
-        // Round a value up to N significant figures, e.g. roundUpToSigFigs(18.5, 2) -> 19.
-        function roundUpToSigFigs(value, sigFigs) {
-            if (!value) return 0;
-            var magnitude = Math.pow(10, sigFigs - Math.ceil(Math.log10(Math.abs(value))));
-            return Math.ceil(value * magnitude) / magnitude;
-        }
-
-        // Always show 5 evenly spaced, 2-sig-fig tick marks above zero,
-        // regardless of the stakes multiplier (F*X) baked into maxValue.
-        var yTickInterval = maxValue > 0 ? roundUpToSigFigs(maxValue / 5, 2) : 1;
-        var yMax = yTickInterval * 5;
+        // Natural (round-number) tick step for the unscaled axis range of ±2.2 -
+        // the fixed per-unit payoff bound used throughout this project (see
+        // task/__init__.py's `2.2 * multiplier`). 2.2 / 0.25 = 8.8, so 9 ticks
+        // above zero (0.25, 0.50, 0.75, ... 2.25) comfortably cover it.
+        // High-stakes charts reuse this same step, scaled up by whatever
+        // multiplier is already baked into maxValue, so the tick pattern
+        // (0.25, 0.50, 0.75, ...) simply scales along with the payoffs.
+        var BASE_MAX_VALUE = 2.2;
+        var NICE_BASE_STEP = 0.25;
+        var TICKS_ABOVE_ZERO = 9;
+        var yTickInterval = maxValue > 0 ? NICE_BASE_STEP * (maxValue / BASE_MAX_VALUE) : 1;
+        var yMax = yTickInterval * TICKS_ABOVE_ZERO;
 
         var absMaxFund = Math.max(...DataFund.map(Math.abs)); // Get absolute maximum from DataFund
         var absMaxBenchmark = Math.max(...DataBenchmark.map(Math.abs)); // Get absolute maximum from DataBenchmark
