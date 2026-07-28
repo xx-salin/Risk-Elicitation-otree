@@ -92,6 +92,7 @@ function createChart() {
             marginRight: 1,
             marginBottom: 60,
             marginf: 55,
+            animation: false,
 <!--            events: {-->
 <!--                load: function () {-->
 <!--                    setTimeout(() => {-->
@@ -205,7 +206,12 @@ function createChart() {
                         Highcharts.numberFormat(point.y, 2, '.', ' ') + '</b>';
                 }, '<b>' + month + '</b>'); // Display the month in bold as the header
             },
-            shared: true
+            shared: true,
+            // Pin the tooltip to the top-left corner so it never covers either bar.
+            positioner: function () {
+                return { x: 40, y: 40 };
+            },
+            animation: false
         },
 
         legend: {

@@ -64,6 +64,7 @@ $(function () {
             marginRight: 30,
             marginBottom: 100,
             marginf: 55,
+            animation: false,
             events: {
                 load: function () {
                     setTimeout(() => {
@@ -91,6 +92,7 @@ $(function () {
                 },
             },
             gridLineWidth: 1,
+            gridLineColor: 'lightgrey',
             tickInterval: 1,
             minTickInterval: 1, // Minimum interval of 1 between ticks
             min: 0,
@@ -138,9 +140,7 @@ $(function () {
         plotOptions: {
             series: {
                 borderColor: 'transparent',
-                animation: {
-                    duration: 000
-                },
+                animation: false,
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -207,6 +207,7 @@ $(function () {
         },
         tooltip: {
             shared: true,
+            animation: false,
             formatter: function () {
                 if (!animationComplete) return false;
                 var x = this.x;
