@@ -48,11 +48,11 @@
             ? [{ value: 0, color: '#dc2626' }, { color: '#16a34a' }]
             : undefined;
 
-        // When bars are loss/gain colored, the fill no longer identifies the
-        // asset, so add a thick per-asset outline instead (A = blue, B = black).
-        var assetABorderColor = colorTreatment === 0 ? '#00BFFF' : 'transparent';
-        var assetBBorderColor = colorTreatment === 0 ? '#000000' : 'transparent';
-        var assetBorderWidth = colorTreatment === 0 ? 3 : 0;
+        // Always outline both assets' bars in black (regardless of color treatment),
+        // so a zero-payoff bar (no height/fill) is still visible.
+        var assetABorderColor = '#000000';
+        var assetBBorderColor = '#000000';
+        var assetBorderWidth = 3;
 
 /// Then, this creates the graph
 $(function () {
