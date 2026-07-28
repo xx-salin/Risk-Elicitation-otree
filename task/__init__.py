@@ -129,6 +129,12 @@ class Player(BasePlayer):
     AI_Test2 = models.StringField(label='', initial='[]')
     ComplicatedWord_Corrections = models.IntegerField(initial=0)
 
+    # simultaneous_joint only: counts how many times the participant clicked Next/Back while moving between the chart/table, choice, and guess screens.
+    next1 = models.IntegerField()
+    next2 = models.IntegerField()
+    back1 = models.IntegerField()
+    back2 = models.IntegerField()
+
 # FUNCTIONS
 def format_currency(value, symbol='£', decimals=2):
     """Format a number as currency with a space as the thousands separator,
@@ -136,6 +142,80 @@ def format_currency(value, symbol='£', decimals=2):
     negative = value < 0
     grouped = f"{abs(value):,.{decimals}f}".replace(',', ' ')
     return f"{'-' if negative else ''}{symbol}{grouped}"
+
+
+def _round_context(player):
+    """Copy this round's per-round participant-level data onto the player's own
+    DB columns, and compute the chart/table stats. Shared by Payoffs_Together
+    (sequential_joint) and the two simultaneous_joint merged chart+choice/guess pages."""
+    player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
+    player.situation_order_a = ','.join(str(s) for s in player.participant.situation_order_a[player.round_number-1])
+    player.situation_order_b = ','.join(str(s) for s in player.participant.situation_order_b[player.round_number-1])
+    player.dependence_variation = player.participant.dependence_variation[player.round_number-1]
+    player.freq_thres_l = player.participant.freq_thres_l[player.round_number-1]
+    player.freq_thres_h = player.participant.freq_thres_h[player.round_number-1]
+    player.tail_thres_l = player.participant.tail_thres_l[player.round_number-1]
+    player.tail_thres_h = player.participant.tail_thres_h[player.round_number-1]
+    player.color_treatment = player.participant.color_treatment
+    multiplier = player.participant.stakes_multiplier
+    arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
+    arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
+
+    def pct0(x):
+        return f"{x:.0%}"
+
+    # TAIL_THRES_L/H (per-distribution, Distributions.xlsx "All" sheet), thresholds scale with stakes
+    below_threshold = player.tail_thres_l * multiplier
+    above_threshold = player.tail_thres_h * multiplier
+
+    averageA = format_currency(sum(arrayA) / len(arrayA))
+    averageB = format_currency(sum(arrayB) / len(arrayB))
+    belowA = pct0(sum(x < below_threshold for x in arrayA) / len(arrayA))
+    belowB = pct0(sum(x < below_threshold for x in arrayB) / len(arrayB))
+    aboveA = pct0(sum(x > above_threshold for x in arrayA) / len(arrayA))
+    aboveB = pct0(sum(x > above_threshold for x in arrayB) / len(arrayB))
+    stdA = format_currency(math.sqrt(sum((x - (sum(arrayA) / len(arrayA))) ** 2 for x in arrayA) / len(arrayA)))
+    stdB = format_currency(math.sqrt(sum((x - (sum(arrayB) / len(arrayB))) ** 2 for x in arrayB) / len(arrayB)))
+
+    return dict(
+        arrayA=arrayA,
+        arrayB=arrayB,
+        animation_time=0,
+        max_value=2.2 * multiplier,
+        averageA=averageA,
+        averageB=averageB,
+        belowA=belowA,
+        belowB=belowB,
+        aboveA=aboveA,
+        aboveB=aboveB,
+        below_threshold=format_currency(below_threshold),
+        above_threshold=format_currency(above_threshold),
+        stdA=stdA,
+        stdB=stdB,
+        color_treatment=player.color_treatment,
+        round_number=player.round_number,
+        num_situations=player.session.config["num_situations"],
+    )
+
+
+def _guess_bounds(player):
+    """Shared by Expectations/Expectations_Choice (sequential_joint) and the two
+    simultaneous_joint merged pages' guess screen."""
+    multiplier = player.participant.stakes_multiplier
+    return dict(
+        average_guess_min=f"{-2.2 * multiplier:.2f}",
+        average_guess_max=f"{2.2 * multiplier:.2f}",
+        freq_thres_l=format_currency(player.participant.freq_thres_l[player.round_number-1] * multiplier),
+        freq_thres_h=format_currency(player.participant.freq_thres_h[player.round_number-1] * multiplier),
+    )
+
+
+def _guess_error_message(player, values):
+    multiplier = player.participant.stakes_multiplier
+    guess_min, guess_max = -2.2 * multiplier, 2.2 * multiplier
+    for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
+        if not (guess_min <= values[field] <= guess_max):
+            return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
 
 
 
@@ -161,62 +241,15 @@ class Start(Page):
 
 class Payoffs_Together(Page):
     form_model = "player"
-    form_fields = ['sequentialTimeSpent', 'simultaneousTimeSpent']
+    form_fields = ['sequentialTimeSpent']
 
     @staticmethod
     def vars_for_template(player):
-        player.tuplesorder = player.participant.tuplesorder[player.round_number-1]
-        player.situation_order_a = ','.join(str(s) for s in player.participant.situation_order_a[player.round_number-1])
-        player.situation_order_b = ','.join(str(s) for s in player.participant.situation_order_b[player.round_number-1])
-        player.dependence_variation = player.participant.dependence_variation[player.round_number-1]
-        player.freq_thres_l = player.participant.freq_thres_l[player.round_number-1]
-        player.freq_thres_h = player.participant.freq_thres_h[player.round_number-1]
-        player.tail_thres_l = player.participant.tail_thres_l[player.round_number-1]
-        player.tail_thres_h = player.participant.tail_thres_h[player.round_number-1]
-        player.color_treatment = player.participant.color_treatment
-        multiplier = player.participant.stakes_multiplier
-        arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
-        arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
+        return _round_context(player)
 
-        def fmt2(x):
-            return format_currency(x)
-
-        def pct0(x):
-            return f"{x:.0%}"
-
-        # TAIL_THRES_L/H (per-distribution, Distributions.xlsx "All" sheet), thresholds scale with stakes
-
-        below_threshold = player.tail_thres_l * multiplier
-        above_threshold = player.tail_thres_h * multiplier
-
-        averageA = fmt2(sum(arrayA) / len(arrayA))
-        averageB = fmt2(sum(arrayB) / len(arrayB))
-        belowA = pct0(sum(x < below_threshold for x in arrayA) / len(arrayA))
-        belowB = pct0(sum(x < below_threshold for x in arrayB) / len(arrayB))
-        aboveA = pct0(sum(x > above_threshold for x in arrayA) / len(arrayA))
-        aboveB = pct0(sum(x > above_threshold for x in arrayB) / len(arrayB))
-        stdA = fmt2(math.sqrt(sum((x - (sum(arrayA) / len(arrayA))) ** 2 for x in arrayA) / len(arrayA)))
-        stdB = fmt2(math.sqrt(sum((x - (sum(arrayB) / len(arrayB))) ** 2 for x in arrayB) / len(arrayB)))
-
-        return dict(
-            arrayA=arrayA,
-            arrayB=arrayB,
-            animation_time=0,
-            max_value=2.2 * multiplier,
-            averageA=averageA,
-            averageB=averageB,
-            belowA=belowA,
-            belowB=belowB,
-            aboveA=aboveA,
-            aboveB=aboveB,
-            below_threshold=fmt2(below_threshold),
-            above_threshold=fmt2(above_threshold),
-            stdA=stdA,
-            stdB=stdB,
-            color_treatment=player.color_treatment,
-            round_number=player.round_number,
-            num_situations=player.session.config["num_situations"],
-        )
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.treatment == "sequential_joint"
 
 class InvestmentDecision(Page):
     form_model = 'player'
@@ -230,7 +263,7 @@ class InvestmentDecision(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.incentive == "choice"
+        return player.incentive == "choice" and player.treatment == "sequential_joint"
 
 class InvestmentDecision_Belief(Page):
     form_model = 'player'
@@ -244,7 +277,7 @@ class InvestmentDecision_Belief(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.incentive == "beliefs"
+        return player.incentive == "beliefs" and player.treatment == "sequential_joint"
 
 
 class Expectations(Page):
@@ -256,26 +289,15 @@ class Expectations(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        multiplier = player.participant.stakes_multiplier
-        return dict(
-            round_number = player.round_number,
-            average_guess_min = f"{-2.2 * multiplier:.2f}",
-            average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = format_currency(player.participant.freq_thres_l[player.round_number-1] * multiplier),
-            freq_thres_h = format_currency(player.participant.freq_thres_h[player.round_number-1] * multiplier),
-        )
+        return dict(round_number=player.round_number, **_guess_bounds(player))
 
     @staticmethod
     def error_message(player: Player, values):
-        multiplier = player.participant.stakes_multiplier
-        guess_min, guess_max = -2.2 * multiplier, 2.2 * multiplier
-        for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
-            if not (guess_min <= values[field] <= guess_max):
-                return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
+        return _guess_error_message(player, values)
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.incentive == "beliefs"
+        return player.incentive == "beliefs" and player.treatment == "sequential_joint"
 
 class Expectations_Choice(Page):
     form_model = 'player'
@@ -286,26 +308,67 @@ class Expectations_Choice(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        multiplier = player.participant.stakes_multiplier
-        return dict(
-            average_guess_min = f"{-2.2 * multiplier:.2f}",
-            average_guess_max = f"{2.2 * multiplier:.2f}",
-            freq_thres_l = format_currency(player.participant.freq_thres_l[player.round_number-1] * multiplier),
-            freq_thres_h = format_currency(player.participant.freq_thres_h[player.round_number-1] * multiplier),
-            round_number = player.round_number,
-        )
+        return dict(round_number=player.round_number, **_guess_bounds(player))
 
     @staticmethod
     def error_message(player: Player, values):
-        multiplier = player.participant.stakes_multiplier
-        guess_min, guess_max = -2.2 * multiplier, 2.2 * multiplier
-        for field in ['Average_Guess_Alt1', 'Average_Guess_Alt2']:
-            if not (guess_min <= values[field] <= guess_max):
-                return f"Value must be between {guess_min:.2f} and {guess_max:.2f}"
+        return _guess_error_message(player, values)
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.incentive == "choice"
+        return player.incentive == "choice" and player.treatment == "sequential_joint"
+
+
+class Payoffs_Together_Simultan_Choice(Page):
+    """simultaneous_joint + choice incentive: chart/table, then choice, then guess,
+    all as client-side screens on one page so the participant can go Back to the
+    chart/table (oTree pages can't otherwise be revisited once submitted)."""
+    form_model = "player"
+    form_fields = [
+        'simultaneousTimeSpent',
+        'InvestmentAsset', 'InvestmentPreference', 'PreferenceError',
+        'Average_Guess_Alt1', 'Average_Guess_Alt2', 'Prob_1_Guess_Alt1', 'Prob_1_Guess_Alt2',
+        'Prob_2_Guess_Alt1', 'Prob_2_Guess_Alt2', 'Volatility',
+        'next1', 'next2', 'back1', 'back2',
+    ]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return dict(**_round_context(player), **_guess_bounds(player))
+
+    @staticmethod
+    def error_message(player: Player, values):
+        return _guess_error_message(player, values)
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.treatment == "simultaneous_joint" and player.incentive == "choice"
+
+
+class Payoffs_Together_Simultan_Belief(Page):
+    """simultaneous_joint + beliefs incentive: chart/table, then guess, then choice,
+    all as client-side screens on one page so the participant can go Back to the
+    chart/table (oTree pages can't otherwise be revisited once submitted)."""
+    form_model = "player"
+    form_fields = [
+        'simultaneousTimeSpent',
+        'InvestmentAsset', 'InvestmentPreference', 'PreferenceError',
+        'Average_Guess_Alt1', 'Average_Guess_Alt2', 'Prob_1_Guess_Alt1', 'Prob_1_Guess_Alt2',
+        'Prob_2_Guess_Alt1', 'Prob_2_Guess_Alt2', 'Volatility',
+        'next1', 'next2', 'back1', 'back2',
+    ]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return dict(**_round_context(player), **_guess_bounds(player))
+
+    @staticmethod
+    def error_message(player: Player, values):
+        return _guess_error_message(player, values)
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.treatment == "simultaneous_joint" and player.incentive == "beliefs"
 
 
 class NextRound(Page):
@@ -445,5 +508,5 @@ class BotScreening(Page):
         return player.round_number == C.NUM_ROUNDS
 
 
-page_sequence = [Start, Payoffs_Together, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions, PageB1, PageB2, BotScreening]
+page_sequence = [Start, Payoffs_Together, Payoffs_Together_Simultan_Choice, Payoffs_Together_Simultan_Belief, InvestmentDecision, Expectations_Choice, Expectations, InvestmentDecision_Belief, NextRound, Final_Questions, PageB1, PageB2, BotScreening]
 

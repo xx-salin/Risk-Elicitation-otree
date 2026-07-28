@@ -19,33 +19,19 @@
 
 
 {% block content %}
-<!--Include hidden fields for time spent-->
+<!--Include hidden field for time spent-->
 <input type="hidden" name="sequentialTimeSpent" id="sequentialTimeSpent"/>
-<input type="hidden" name="simultaneousTimeSpent" id="simultaneousTimeSpent"/>
-<input type="hidden" name="timeToNewTooltip" id="timeToNewTooltip"/>
 
 
 <div class="container bg-light border custom-border">
         <br>
-        {% if player.treatment == "sequential_joint" %}
         <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.</p>
-        {% else %}
-        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.
-            <br>
-            <b>Note:</b> The payoffs are ordered from low to high for each asset.
-            To see the corresponding situation and payoffs, hover over the respective bar.
-        </p>
-        {% endif %}
 
 
 
     <!-- The area with the chart and the button. -->
 
-{% if player.treatment == "sequential_joint" %}
 <div id='canvas' style='position: relative; width: 80%; max-width: 1244px; left: 15%; height: 525px; margin: 0 auto; display: block;'>
-{% else %}
-<div id='canvas' style='position: relative; width: 80%; max-width: 1244px; height: 525px; margin: 0 auto; display: block;'>
-{% endif %}
     <!-- The area for the chart-->
     <ul class="value" id='v' style="position: relative; z-index: -1; left: 50%; top: 50%; transform: translate(-50%, -50%); visibility: hidden;">
         <font size="6"><li id="re1">  </li></font>
@@ -55,60 +41,10 @@
 </div>
 
 
-
-<!-- Summary statistics table (simultaneous condition only) - disabled for now. -->
-
-{% if player.treatment != "sequential_joint" %}
-<!-- Summary statistics table (simultaneous condition only) -->
-<div style="width: 80%; max-width: 900px; margin: -20px auto 20px auto;">
-
-    <div class="table-responsive">
-        <table class="table table-sm table-bordered text-center bg-white">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Asset A</th>
-                    <th>Asset B</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th style="text-align: left;">Average payoff:</th>
-                    <td>{{ averageA }}</td>
-                    <td>{{ averageB }}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left;">Variation in payoffs:</th>
-                    <td>{{ stdA }}</td>
-                    <td>{{ stdB }}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left;">Frequency of payoffs below {{ below_threshold }}:</th>
-                    <td>{{ belowA }}</td>
-                    <td>{{ belowB }}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left;">Frequency of payoffs above {{ above_threshold }}:</th>
-                    <td>{{ aboveA }}</td>
-                    <td>{{ aboveB }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-
-
 <!--This is the next button -->
 <div id="bb1" style='position: relative; left: 35px; top: 0px; right: 0px; padding-bottom: 40px; text-align: center; '>
-
-    {% if player.treatment == "sequential_joint" %}
     <button type="button" class="btn btn-primary" id="updateChartButton" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" onclick="updateTimeSpent()">Next</button>
     <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000; display: none;" class="otree-btn-next btn btn-primary" onclick="updateTimeSpent()" disabled>Next</button>
-    {% else %}
-    <button id="b1" style="position: relative; top: -30px; right: 20px; margin: auto; z-index: 20000;" class="otree-btn-next btn btn-primary" onclick="recordSimultaneousTimeSpent()">Next</button>
-    {% endif %}
-
 </div>
 {% endblock %}
 
@@ -132,14 +68,9 @@
             return sign + '£' + Highcharts.numberFormat(Math.abs(value), 2, '.', ' ');
         }
 
-        {% if player.treatment == "sequential_joint" %}
         {% include "_static/Graph_Together_Sequential.js" %}
-        {% else %}
-        {% include "_static/Graph_Together_Simultan.js" %}
-        {% endif %}
     </script>
 
-    {% if player.treatment == "sequential_joint" %}
     <script>
         let timeSpent = [];
         let startTime = new Date().getTime();
@@ -155,16 +86,5 @@
 
 
     </script>
-    {% else %}
-    <script>
-        // total time (ms) spent viewing the single graph, from page load until
-        // clicking Next - the simultaneous-treatment equivalent of sequentialTimeSpent
-        let simultaneousStartTime = new Date().getTime();
-
-        function recordSimultaneousTimeSpent() {
-            document.getElementById('simultaneousTimeSpent').value = new Date().getTime() - simultaneousStartTime;
-        }
-    </script>
-    {% endif %}
 
 {{ endblock }}
