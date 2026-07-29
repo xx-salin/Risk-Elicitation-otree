@@ -28,6 +28,8 @@ class Player(BasePlayer):
     stakes = models.StringField()
 
     color_treatment = models.IntegerField()
+    # "global" = payoff graph y-axis scaled the same way every round VS "rlocal" = y-axis rescaled each round based on that round's own min/max payoffs.
+    axis_scale = models.StringField()
 
     #captures which of the 5 joint distributions is used
     tuplesorder = models.IntegerField()
@@ -157,6 +159,7 @@ def _round_context(player):
     player.tail_thres_l = player.participant.tail_thres_l[player.round_number-1]
     player.tail_thres_h = player.participant.tail_thres_h[player.round_number-1]
     player.color_treatment = player.participant.color_treatment
+    player.axis_scale = player.participant.axis_scale
     multiplier = player.participant.stakes_multiplier
     arrayA = [x * multiplier for x in player.participant.payoffsA[player.round_number-1]]
     arrayB = [x * multiplier for x in player.participant.payoffsB[player.round_number-1]]
@@ -193,6 +196,7 @@ def _round_context(player):
         stdA=stdA,
         stdB=stdB,
         color_treatment=player.color_treatment,
+        axis_scale=player.axis_scale,
         round_number=player.round_number,
         num_situations=player.session.config["num_situations"],
     )

@@ -389,6 +389,8 @@ def creating_session(subsession):
             player.participant.bonusperiod = random.randint(1, 10)
             # independent per-participant coin flip (not part of the 2x2x2 design above): 0 = color-coded, 1 = neutral color.
             player.participant.color_treatment = random.randint(0, 1)
+            # independent per-participant coin flip (not part of the 2x2x2 design above):
+            player.participant.axis_scale = random.choice(["global", "rlocal"])
 
 # PAGES
 class Elicit_Wealth(Page):

@@ -24,24 +24,48 @@
         var maxValue = {{ max_value }}; // Get maximum value for the player
         var minValue = - maxValue;
 
-        // Natural (round-number) tick step for the unscaled axis range of ±2.2 -
-        // the fixed per-unit payoff bound used throughout this project (see
-        // task/__init__.py's `2.2 * multiplier`). Ticks land on 0.00, 0.50,
-        // 1.00, 1.50, ... - enough of them to comfortably cover 2.2.
-        // High-stakes charts reuse this same step, scaled up by whatever
-        // multiplier is already baked into maxValue, so the tick pattern
-        // simply scales along with the payoffs.
-        var BASE_MAX_VALUE = 2.2;
-        var NICE_BASE_STEP = 0.5;
-        var TICKS_ABOVE_ZERO = Math.ceil(BASE_MAX_VALUE / NICE_BASE_STEP);
-        var yTickInterval = maxValue > 0 ? NICE_BASE_STEP * (maxValue / BASE_MAX_VALUE) : 1;
-        var yMax = yTickInterval * TICKS_ABOVE_ZERO;
-
         var absMaxFund = Math.max(...DataFund.map(Math.abs)); // Get absolute maximum from DataFund
         var absMaxBenchmark = Math.max(...DataBenchmark.map(Math.abs)); // Get absolute maximum from DataBenchmark
 
         var dynamicMaxValue = Math.max(absMaxFund, absMaxBenchmark); // Choose the larger of the two
         var dynamicMinValue = -dynamicMaxValue; // Symmetric minimum value
+
+        // Round a rough step up to a "nice" 1/2/2.5/5/10 (times a power of ten)
+        // value, e.g. niceStep(0.44) -> 0.5, niceStep(430) -> 500.
+        function niceStep(roughStep) {
+            if (!roughStep || roughStep <= 0) return 1;
+            var exponent = Math.floor(Math.log10(roughStep));
+            var fraction = roughStep / Math.pow(10, exponent);
+            var niceFraction;
+            if (fraction <= 1) niceFraction = 1;
+            else if (fraction <= 2) niceFraction = 2;
+            else if (fraction <= 2.5) niceFraction = 2.5;
+            else if (fraction <= 5) niceFraction = 5;
+            else niceFraction = 10;
+            return niceFraction * Math.pow(10, exponent);
+        }
+
+        var yTickInterval, yMax;
+        if (axisScale === 'rlocal') {
+            // axis_scale (set in setup/__init__.py's creating_session): "rlocal" -
+            // rescale the y-axis each round to that round's own min/max payoffs,
+            // rather than the fixed project-wide bound used by "global" below.
+            yTickInterval = niceStep(dynamicMaxValue / 5);
+            yMax = yTickInterval * Math.ceil((dynamicMaxValue || 1) / yTickInterval);
+        } else {
+            // "global" (default): natural (round-number) tick step for the unscaled
+            // axis range of ±2.2 - the fixed per-unit payoff bound used throughout
+            // this project (see task/__init__.py's `2.2 * multiplier`). Ticks land
+            // on 0.00, 0.50, 1.00, 1.50, ... - enough of them to comfortably cover
+            // 2.2. High-stakes charts reuse this same step, scaled up by whatever
+            // multiplier is already baked into maxValue, so the tick pattern
+            // simply scales along with the payoffs.
+            var BASE_MAX_VALUE = 2.2;
+            var NICE_BASE_STEP = 0.5;
+            var TICKS_ABOVE_ZERO = Math.ceil(BASE_MAX_VALUE / NICE_BASE_STEP);
+            yTickInterval = maxValue > 0 ? NICE_BASE_STEP * (maxValue / BASE_MAX_VALUE) : 1;
+            yMax = yTickInterval * TICKS_ABOVE_ZERO;
+        }
 
         // colorTreatment (set in Payoffs_Together.html): 0 = color-code bars
         // red/green for loss/gain, 1 = keep the series' own neutral color.
