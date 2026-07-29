@@ -161,7 +161,10 @@ function createChart() {
                 enabled: false,
             },
             gridLineWidth: 0,
-            lineColor: '#000000',
+            // The x-axis's own line would otherwise sit at the bottom of the
+            // plot area (yAxis.min); hidden here since the black axis line
+            // should instead sit at the £0.00 tick - see yAxis.plotLines below.
+            lineWidth: 0,
             pointPlacement: 'on',
             animation: false,
         },
@@ -187,8 +190,10 @@ function createChart() {
             min: -yMax,
             max: yMax,
             tickInterval: yTickInterval,
+            // Stands in for the x-axis (hidden above) - a solid black line at the
+            // £0.00 tick, so the "axis" reads at zero rather than at the bottom.
             plotLines: [{
-                color: 'lightgrey',
+                color: '#000000',
                 width: 1,
                 value: 0,
                 zIndex: 2

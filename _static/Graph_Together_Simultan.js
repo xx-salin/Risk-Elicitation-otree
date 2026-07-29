@@ -133,7 +133,7 @@ $(function () {
         xAxis: {
             type: 'linear',
             tickWidth: 0,
-            lineColor: '#000000',
+            lineWidth: 0,
             labels: {
                 style: {
                     fontSize: '14px'
@@ -178,7 +178,7 @@ $(function () {
             max: yMax,
             tickInterval: yTickInterval,
             plotLines: [{
-                color: 'lightgrey',
+                color: '#000000',
                 width: 1,
                 value: 0,
                 zIndex: 2
