@@ -26,14 +26,14 @@
 
         // Natural (round-number) tick step for the unscaled axis range of ±2.2 -
         // the fixed per-unit payoff bound used throughout this project (see
-        // task/__init__.py's `2.2 * multiplier`). 2.2 / 0.25 = 8.8, so 9 ticks
-        // above zero (0.25, 0.50, 0.75, ... 2.25) comfortably cover it.
+        // task/__init__.py's `2.2 * multiplier`). Ticks land on 0.00, 0.50,
+        // 1.00, 1.50, ... - enough of them to comfortably cover 2.2.
         // High-stakes charts reuse this same step, scaled up by whatever
         // multiplier is already baked into maxValue, so the tick pattern
-        // (0.25, 0.50, 0.75, ...) simply scales along with the payoffs.
+        // simply scales along with the payoffs.
         var BASE_MAX_VALUE = 2.2;
-        var NICE_BASE_STEP = 0.25;
-        var TICKS_ABOVE_ZERO = 9;
+        var NICE_BASE_STEP = 0.5;
+        var TICKS_ABOVE_ZERO = Math.ceil(BASE_MAX_VALUE / NICE_BASE_STEP);
         var yTickInterval = maxValue > 0 ? NICE_BASE_STEP * (maxValue / BASE_MAX_VALUE) : 1;
         var yMax = yTickInterval * TICKS_ABOVE_ZERO;
 
@@ -220,7 +220,7 @@ $(function () {
                         return false;
                     }
                 },
-                pointWidth: 25,
+                pointWidth: 20,
                 dataLabels: {
                     style: {
                         fontSize: '8px'
@@ -277,7 +277,7 @@ $(function () {
             zoneAxis: 'y',
             borderColor: assetABorderColor,
             borderWidth: assetBorderWidth,
-            pointPlacement: -0.04,
+            pointPlacement: -0.04, // leaves a small gap to Asset B's bar within each situation
             pointRange: 1,
             clip: false,
             zIndex: 1,
@@ -306,7 +306,7 @@ $(function () {
             zoneAxis: 'y',
             borderColor: assetBBorderColor,
             borderWidth: assetBorderWidth,
-            pointPlacement: 0.04,
+            pointPlacement: 0.04, // leaves a small gap to Asset A's bar within each situation
             pointRange: 1,
             clip: false,
             zIndex: 0,

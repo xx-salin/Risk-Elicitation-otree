@@ -17,14 +17,14 @@
 
         // Natural (round-number) tick step for the unscaled axis range of ±2.2 -
         // the fixed per-unit payoff bound used throughout this project (see
-        // task/__init__.py's `2.2 * multiplier`). 2.2 / 0.25 = 8.8, so 9 ticks
-        // above zero (0.25, 0.50, 0.75, ... 2.25) comfortably cover it.
+        // task/__init__.py's `2.2 * multiplier`). Ticks land on 0.00, 0.50,
+        // 1.00, 1.50, ... - enough of them to comfortably cover 2.2.
         // High-stakes charts reuse this same step, scaled up by whatever
         // multiplier is already baked into maxValue, so the tick pattern
-        // (0.25, 0.50, 0.75, ...) simply scales along with the payoffs.
+        // simply scales along with the payoffs.
         var BASE_MAX_VALUE = 2.2;
-        var NICE_BASE_STEP = 0.25;
-        var TICKS_ABOVE_ZERO = 9;
+        var NICE_BASE_STEP = 0.5;
+        var TICKS_ABOVE_ZERO = Math.ceil(BASE_MAX_VALUE / NICE_BASE_STEP);
         var yTickInterval = maxValue > 0 ? NICE_BASE_STEP * (maxValue / BASE_MAX_VALUE) : 1;
         var yMax = yTickInterval * TICKS_ABOVE_ZERO;
 
@@ -212,7 +212,7 @@ function createChart() {
                         return false;
                     }
                 },
-                pointWidth: 50,
+                pointWidth: 30, // matches the simultaneous-group chart, so bar width/spacing looks the same across both
                 dataLabels: {
                     style: {
                         fontSize: '8px'
@@ -277,7 +277,7 @@ function createChart() {
             clip: false,
             zIndex: 1,
             id: 'main',
-            pointPlacement: -0.04,
+            pointPlacement: 0.06,
             pointRange: 1,
         },
         {
@@ -291,7 +291,7 @@ function createChart() {
             pointPlacement: 'on',
             clip: false,
             zIndex: 0,
-            pointPlacement: 0.04,
+            pointPlacement: -0.06,
             pointRange: 1,
         },
         ]
