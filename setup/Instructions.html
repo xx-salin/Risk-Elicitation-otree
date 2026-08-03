@@ -83,9 +83,6 @@
             <p>
                 For each choice, we take all possible outcomes for both assets and rescale them so that the worst outcome across all situations and both assets corresponds to a bonus of £0.00, the best outcome corresponds to a bonus of £2.00, and intermediate outcomes scale up/down with a constant factor.
             </p>
-            <p>
-                Imagine you start out with an initial wealth of {{ wealth_W }}. Your bonus payment is this wealth plus the outcome you see for your chosen asset in the randomly selected round and situation.
-            </p>
             {{ if player.participant.stakes == "high" }}
             <p>
                 For example, if the minimum outcome across all situations is <b>-£1 000</b> for Asset A in Situation 1, and the maximum outcome across all situations is <b>+£1 000</b> for Asset B in Situation 2, we rescale outcomes using the formula:
