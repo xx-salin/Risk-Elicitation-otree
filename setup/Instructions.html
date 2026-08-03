@@ -165,11 +165,6 @@
             <p>
                 For guesses where you estimate a payoff (in £) or a likelihood (in %), you earn a bonus of £2.00 if your estimate is within 5% of the correct answer, and £0.00 otherwise.
             </p>
-            {{ if player.participant.stakes == "high" }}
-            <p>
-                Note: The outcomes shown to you during the task have been scaled up by a fixed factor of {{ stakes_factor }}.
-            </p>
-            {{ endif }}
             {{ endif }}
         </div>
     </div>
