@@ -73,7 +73,7 @@ class Player(BasePlayer):
         label='What is your main task in this experiment?',
         choices=[
             [0, "Choose between the two assets in each round."],
-            [1, "Guess different payoffs for the two assets in each round."],
+            [1, "Guess different outcomes for the two assets in each round."],
             [2, "Rank the ten rounds from most to least risky."],
         ],
         widget=widgets.RadioSelect(),
@@ -81,7 +81,7 @@ class Player(BasePlayer):
     comprehension_bonus = models.IntegerField(
         label='How is your bonus payment determined?',
         choices=[
-            [0, "One round is randomly selected, and a situation is drawn from equally likely situations to determine the payoff of the asset you chose in that round."],
+            [0, "One round is randomly selected, and a situation is drawn from equally likely situations to determine the outcome of the asset you chose in that round."],
             [1, "One of your guesses is randomly selected, and your bonus depends on how close your guess was to the correct answer."],
             [2, "My bonus is a fixed amount and does not depend on the round, situation, or my choices/guesses."],
         ],
@@ -347,7 +347,7 @@ def creating_session(subsession):
                 payoffsA.append([tuples[r - 1][AorB] for r in order])
                 payoffsB.append([tuples[r - 1][1 - AorB] for r in order])
 
-        # "Initial wealth" offset added to bonus payoffs
+        # "Initial wealth" offset added to bonus 
         drawn_payoffs = [v for lst in payoffsA + payoffsB for v in lst]
         wealth_W = max(0, -min(drawn_payoffs))
         players = group.get_players()

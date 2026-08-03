@@ -28,7 +28,7 @@ class Player(BasePlayer):
     stakes = models.StringField()
 
     color_treatment = models.IntegerField()
-    # "global" = payoff graph y-axis scaled the same way every round VS "rlocal" = y-axis rescaled each round based on that round's own min/max payoffs.
+    # "global" = outcome graph y-axis scaled the same way every round VS "rlocal" = y-axis rescaled each round based on that round's own min/max outcomes.
     axis_scale = models.StringField()
 
     #captures which of the 5 joint distributions is used
@@ -96,22 +96,22 @@ class Player(BasePlayer):
         max=100
     )
     Volatility = models.IntegerField(
-        label="Which asset exhibited a stronger variation in payoffs?",
+        label="Which asset exhibited a stronger variation in outcomes?",
         choices=[[0, 'Asset A'], [1, 'Asset B'], [2, 'No difference']],
         widget=widgets.RadioSelectHorizontal(),
     )
     ChoiceAvrgReturn = models.IntegerField(
-        label='When making your choices, to what extent did you rely on the average payoff of the assets? Select a category between 1 ("Not at all") and 5 ("A lot").',
+        label='When making your choices, to what extent did you rely on the average outcome of the assets? Select a category between 1 ("Not at all") and 5 ("A lot").',
         choices=range(1, 6),
         widget=widgets.RadioSelectHorizontal()
     )
     ChoiceVolatility = models.IntegerField(
-        label='When making your choices, to what extent did you rely on the variation in payoffs? Select a category between 1 ("Not at all") and 5 ("A lot").',
+        label='When making your choices, to what extent did you rely on the variation in outcomes? Select a category between 1 ("Not at all") and 5 ("A lot").',
         choices=range(1, 6),
         widget=widgets.RadioSelectHorizontal()
     )
     ChoiceExtreme = models.IntegerField(
-        label='When making your choices, to what extent did you rely on situations with an extreme difference in payoffs between the two assets? Select a category between 1 ("Not at all") and 5 ("A lot").',
+        label='When making your choices, to what extent did you rely on situations with an extreme difference in outcomes between the two assets? Select a category between 1 ("Not at all") and 5 ("A lot").',
         choices=range(1, 6),
         widget=widgets.RadioSelectHorizontal()
     )

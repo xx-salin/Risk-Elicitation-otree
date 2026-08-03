@@ -12,7 +12,7 @@
 </p>
 <br>
 <p>
-    Please guess the average payoff for each of the two assets:
+    Please guess the average outcome for each of the two assets:
 </p>
 
 <form class = "otree-form" method = "post" role = "form" id = "form" autocomplete = "off">
@@ -21,14 +21,14 @@
     <table id="table1" class="display" style="width:100%">
         <thead>
             <tr>
-                <th>Payoff</th>
+                <th>Outcome</th>
                 <th>Asset A</th>
                 <th>Asset B</th>
             </tr>
         </thead>
         <tbody>
                 <tr>
-                <td> Average Payoff </td>
+                <td> Average Outcome </td>
                 <td><input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class = "form-control" min = "{{ average_guess_min }}" max = "{{ average_guess_max }}" step = "any" required oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')" oninput="this.setCustomValidity('')"></td>
                 <td><input type="number" id="Average_Guess_Alt2" name="Average_Guess_Alt2" class = "form-control" min = "{{ average_guess_min }}" max = "{{ average_guess_max }}" step = "any" required oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')" oninput="this.setCustomValidity('')"></td>
                 </tr>
@@ -37,25 +37,25 @@
 <br>
 <br>
     <p>
-            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ freq_thres_l }}
+            Please guess the frequency (in %) at which each of the two alternatives has an outcome below {{ freq_thres_l }}
             or above {{ freq_thres_h }}:
     </p>
         <table id="table2" class="display" style="width:100%">
             <thead>
                 <tr>
-                    <th>Payoff</th>
+                    <th>Outcome</th>
                     <th>Asset A</th>
                     <th>Asset B</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td> Payoff below {{ freq_thres_l }} </td>
+                    <td> Outcome below {{ freq_thres_l }} </td>
                     <td><input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     <td><input type="number" id="Prob_1_Guess_Alt2" name="Prob_1_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     </tr>
                 <tr>
-                    <td> Payoff above {{ freq_thres_h }} </td>
+                    <td> Outcome above {{ freq_thres_h }} </td>
                     <td><input type="number" id="Prob_2_Guess_Alt1" name="Prob_2_Guess_Alt1" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     <td><input type="number" id="Prob_2_Guess_Alt2" name="Prob_2_Guess_Alt2" class = "form-control" min = "0" max = "100" step = "any" required></td>
                     </tr>
@@ -67,7 +67,7 @@
     <br>
     <br>
     <p>
-        Please answer the following additional question regarding the assets' payoffs:
+        Please answer the following additional question regarding the assets' outcomes:
     </p>
         {{ formfield "Volatility" }}
 <br>

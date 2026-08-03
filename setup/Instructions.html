@@ -10,28 +10,28 @@
     </p>
     <p>
         This experiment has 10 rounds.
-        In each round you will observe the payoffs of two assets, Asset A and Asset B.
-        These assets will generate different payoffs depending on the situation, or state, that they are in.
+        In each round you will observe the outcomes of two assets, Asset A and Asset B.
+        These assets will generate different outcomes depending on the situation, or state, that they are in.
         For example, take a risky asset like an Apple stock.
         In some situations, like when the economy is doing really well and people are buying computers, the price of Apple will go up.
         In other situations, like when the economy is in a recession, the price of Apple will go down.
         Similarly, if a rival company releases a nice new product, Apple will go down, but if a rival company goes bankrupt, the price of Apple will go up.
         <br>
         You will be provided with information on how well the two different assets do across a number of situations.
-        In some situations one asset will generate a higher payoff than the other, or vice versa.
+        In some situations one asset will generate a higher outcome than the other, or vice versa.
         For example, take Asset A and B.
-        In Situation 1, Asset A will generate a payoff of $7 and Asset B will generate a payoff of $2.
-        Alternatively, in Situation 2, Asset A will generate a payoff of $2 and Asset B will generate a payoff of $7.
+        In Situation 1, Asset A will generate an outcome of $7 and Asset B will generate an outcome of $2.
+        Alternatively, in Situation 2, Asset A will generate an outcome of $2 and Asset B will generate an outcome of $7.
         The situation clearly determines which of the two assets is better at any given time.
         Each situation has an equal chance of being picked at any given time.
         <p>
-        The payoffs of Asset A and Asset B in one round are unrelated to the payoffs in other rounds.
+        The outcomes of Asset A and Asset B in one round are unrelated to the outcomes in other rounds.
         <br>
         {{ if player.participant.incentive == "choice" }}
         Your task is to choose between the two assets in each round.
         We will also ask a few additional questions after the rounds.
         {{ else }}
-        Your task is to guess different payoffs for the two assets in each round.
+        Your task is to guess different outcomes for the two assets in each round.
         We will also ask a few additional questions after the rounds.
         {{ endif }}
         <p/>
@@ -51,7 +51,7 @@
     <p>
         {{ if player.participant.incentive == "choice" }}
         The exact amount of the bonus payment depends on your choices.
-        It will be based on the payoffs of the asset you choose in one of the 10 rounds.
+        It will be based on the outcomes of the asset you choose in one of the 10 rounds.
         One of these rounds will be randomly selected for the payment.
         Your bonus payment will be based on the outcome of your chosen asset in a randomly selected situation from this round.
         You will be informed about the selected outcome and your exact payment at the end of the experiment.
@@ -59,7 +59,7 @@
         (For more information on how your bonus payment is calculated, click the "Details" button.)
         {{ else }}
         The exact amount of the bonus payment depends on your guesses.
-        It will be based on the payoffs of the assets in one of the 10 rounds.
+        It will be based on the outcomes of the assets in one of the 10 rounds.
         One of these rounds will be randomly selected for the payment.
         One of your guesses in that round will be randomly selected for your payment. If your guess is close to the correct answer you receive a bonus of £2.00. 
         You will be informed about the selected guess and your exact payment at the end of the experiment.
@@ -94,7 +94,7 @@
                     <thead>
                         <tr>
                             <th>Example outcome</th>
-                            <th>Amount</th>
+                            <th>Outcome</th>
                             <th>Bonus</th>
                         </tr>
                     </thead>
@@ -160,7 +160,7 @@
                 We check how accurate your selected guess is against the statistically correct answer, and rescale that accuracy into a bonus of £0.00 (inaccurate) or £2.00 (accurate).
             </p>
             <p>
-                For guesses where you estimate a payoff (in £) or a likelihood (in %), you earn a bonus of £2.00 if your estimate is within 5% of the correct answer, and £0.00 otherwise.
+                For guesses where you estimate a outcome (in £) or a likelihood (in %), you earn a bonus of £2.00 if your estimate is within 5% of the correct answer, and £0.00 otherwise.
             </p>
             {{ endif }}
         </div>

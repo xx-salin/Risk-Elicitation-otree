@@ -136,10 +136,10 @@
 <div id="screen-chart">
 <div class="container-fluid bg-light border custom-border">
         <br>
-        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the outcomes across all {{ num_situations }} situations of Asset A and Asset B, respectively.
             <br>
-            <b>Note:</b> The payoffs are ordered from low to high for each asset.
-            To see the corresponding situation and payoffs, hover over the respective bar.
+            <b>Note:</b> The outcomes are ordered from low to high for each asset.
+            To see the corresponding situation and outcomes, hover over the respective bar.
         </p>
 
 <div id='canvas' style='position: relative; width: 95%; max-width: 1600px; height: 525px; margin: 0 auto; display: block;'>
@@ -161,22 +161,22 @@
             </thead>
             <tbody>
                 <tr>
-                    <th style="text-align: left;">Average payoff:</th>
+                    <th style="text-align: left;">Average outcome:</th>
                     <td>{{ averageA }}</td>
                     <td>{{ averageB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Variation in payoffs:</th>
+                    <th style="text-align: left;">Variation in outcomes:</th>
                     <td>{{ stdA }}</td>
                     <td>{{ stdB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs below {{ below_threshold }}:</th>
+                    <th style="text-align: left;">Frequency of outcomes below {{ below_threshold }}:</th>
                     <td>{{ belowA }}</td>
                     <td>{{ belowB }}</td>
                 </tr>
                 <tr>
-                    <th style="text-align: left;">Frequency of payoffs above {{ above_threshold }}:</th>
+                    <th style="text-align: left;">Frequency of outcomes above {{ above_threshold }}:</th>
                     <td>{{ aboveA }}</td>
                     <td>{{ aboveB }}</td>
                 </tr>
@@ -245,21 +245,21 @@
 
 <div id="screen-guess" style="display: none;">
 <p>
-    Please guess the average payoff for each of the two assets:
+    Please guess the average outcome for each of the two assets:
 </p>
 
 <div class="form-group">
     <table id="table1" class="display" style="width:100%">
         <thead>
             <tr>
-                <th>Payoff</th>
+                <th>Outcome</th>
                 <th>Asset A</th>
                 <th>Asset B</th>
             </tr>
         </thead>
         <tbody>
                 <tr>
-                <td> Average Payoff </td>
+                <td> Average Outcome </td>
                 <td>
                     <input type="number" id="Average_Guess_Alt1" name="Average_Guess_Alt1" class="form-control" min="{{ average_guess_min }}" max="{{ average_guess_max }}" step="any" required oninvalid="this.setCustomValidity('Value must be between {{ average_guess_min }} and {{ average_guess_max }}')" oninput="this.setCustomValidity('')">
                     {{ formfield_errors 'Average_Guess_Alt1' }}
@@ -273,20 +273,20 @@
     </table>
 <br>
     <p>
-            Please guess the frequency (in %) at which each of the two alternatives has a payoff below {{ freq_thres_l }}
+            Please guess the frequency (in %) at which each of the two alternatives has an outcome below {{ freq_thres_l }}
             or above {{ freq_thres_h }}:
     </p>
         <table id="table2" class="display" style="width:100%">
             <thead>
                 <tr>
-                    <th>Payoff</th>
+                    <th>Outcome</th>
                     <th>Asset A</th>
                     <th>Asset B</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td> Payoff below {{ freq_thres_l }} </td>
+                    <td> Outcome below {{ freq_thres_l }} </td>
                     <td>
                         <input type="number" id="Prob_1_Guess_Alt1" name="Prob_1_Guess_Alt1" class="form-control" min="0" max="100" step="any" required>
                         {{ formfield_errors 'Prob_1_Guess_Alt1' }}
@@ -297,7 +297,7 @@
                     </td>
                     </tr>
                 <tr>
-                    <td> Payoff above {{ freq_thres_h }} </td>
+                    <td> Outcome above {{ freq_thres_h }} </td>
                     <td>
                         <input type="number" id="Prob_2_Guess_Alt1" name="Prob_2_Guess_Alt1" class="form-control" min="0" max="100" step="any" required>
                         {{ formfield_errors 'Prob_2_Guess_Alt1' }}
@@ -311,7 +311,7 @@
         </table>
     <br>
     <p>
-            Please answer the following additional question regarding the assets' payoffs:
+            Please answer the following additional question regarding the assets' outcomes:
     </p>
         {{ formfield "Volatility" }}
 </div>
@@ -339,7 +339,7 @@
         var colorTreatment = {{ color_treatment }};
         var axisScale = "{{ axis_scale }}";
 
-        // Format a payoff as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
+        // Format an outcome as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
         function formatPayoffCurrency(value) {
             var sign = value < 0 ? '-' : '';
             return sign + '£' + Highcharts.numberFormat(Math.abs(value), 2, '.', ' ');

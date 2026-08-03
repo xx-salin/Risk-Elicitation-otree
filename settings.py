@@ -8,8 +8,8 @@ TESTING_MODE = True
 
 
 # HIGH STAKES MULTIPLIER
-# "high" = payoffs scaled by STAKES_FACTOR_F * (lower bound of their answer to STAKES_SOURCE_FIELD on the Elicit_Wealth page)
-# "Low" = payoffs unscaled (multiplier 1)
+# "high" = outcomes scaled by STAKES_FACTOR_F * (lower bound of their answer to STAKES_SOURCE_FIELD on the Elicit_Wealth page)
+# "Low" = outcomes unscaled (multiplier 1)
 # STAKES_SOURCE_FIELD: "Demographics_Household_Income", "Demographics_LiquidWealth", "Demographics_IlliquidWealth", "Demographics_DebtWealth"
 
 STAKES_FACTOR_F = 2.0

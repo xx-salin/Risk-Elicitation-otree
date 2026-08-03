@@ -1,6 +1,6 @@
 {% extends "global/Page.html" %}
 {{ block title }}
-    Round {{ player.round_number }} (of {{ C.NUM_ROUNDS }}) - Payoffs
+    Round {{ player.round_number }} (of {{ C.NUM_ROUNDS }}) - Outcomes
 {{ endblock }}
 
 
@@ -25,7 +25,7 @@
 
 <div class="container bg-light border custom-border">
         <br>
-        <p style="padding-left:30px; padding-right:30px"> Below you can observe the payoffs across all {{ num_situations }} situations of Asset A and Asset B, respectively.</p>
+        <p style="padding-left:30px; padding-right:30px"> Below you can observe the outcomes across all {{ num_situations }} situations of Asset A and Asset B, respectively.</p>
 
 
 
@@ -64,7 +64,7 @@
         var colorTreatment = {{ color_treatment }};
         var axisScale = "{{ axis_scale }}";
 
-        // Format a payoff as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
+        // Format an outcome as currency with a space thousands separator, e.g. £1 000.00, -£20 000.00
         function formatPayoffCurrency(value) {
             var sign = value < 0 ? '-' : '';
             return sign + '£' + Highcharts.numberFormat(Math.abs(value), 2, '.', ' ');
