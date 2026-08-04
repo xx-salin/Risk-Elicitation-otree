@@ -87,6 +87,10 @@ class Player(BasePlayer):
         ],
         widget=widgets.RadioSelect(),
     )
+    # How many times the participant clicked "Previous" while on the Instructions/Comprehension Check page.
+    instructions_previous_clicks = models.IntegerField()
+    # How many times the participant submitted the Comprehension Check with at least one wrong answer.
+    comprehension_wrong_attempts = models.IntegerField(initial=0)
 
     # elicit_wealth
     Demographics_Household_Income = models.IntegerField(
@@ -495,7 +499,10 @@ class PageA3(Page):
 
 class Instructions(Page):
     form_model = "player"
-    form_fields = ['comprehension_situations', 'comprehension_task', 'comprehension_bonus']
+    form_fields = [
+        'comprehension_situations', 'comprehension_task', 'comprehension_bonus',
+        'instructions_previous_clicks',
+    ]
 
     @staticmethod
     def is_displayed(player: Player):
@@ -534,6 +541,7 @@ class Instructions(Page):
             if values[field] != correct_value
         }
         if errors:
+            player.comprehension_wrong_attempts += 1
             return errors
 
 page_sequence = [Welcome, LeavePage, ProlificID, PageA1, PageA2, PageA3, Elicit_Wealth, Instructions]

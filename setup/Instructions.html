@@ -4,6 +4,8 @@
 {{ endblock }}
 {{ block content }}
 
+    <input name="instructions_previous_clicks" id="instructions_previous_clicks" type="hidden" value="{{ if form.instructions_previous_clicks.data }}{{ form.instructions_previous_clicks.data }}{{ else }}0{{ endif }}"/>
+
     <div class="tab">
     <p>
     <b>Task</b>
@@ -172,7 +174,9 @@
     </p>
 
     <p>
-        {{ formfields }}
+        {{ formfield "comprehension_situations" }}
+        {{ formfield "comprehension_task" }}
+        {{ formfield "comprehension_bonus" }}
     </p>
 
     <p>
@@ -208,7 +212,12 @@
     showCurrentTabOnly();
     for (let btn of document.getElementsByClassName('otree-btn-next btn btn-primary')) {
         btn.onclick = function () {
-            activeTab += parseInt(btn.dataset.offset);
+            const offset = parseInt(btn.dataset.offset);
+            if (offset < 0) {
+                const field = document.getElementById('instructions_previous_clicks');
+                field.value = (parseInt(field.value) || 0) + 1;
+            }
+            activeTab += offset;
             showCurrentTabOnly();
         }
     }
