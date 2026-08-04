@@ -268,7 +268,8 @@ function createChart() {
         legend: {
             align: 'center',
             enabled: true,
-            squareSymbol: true,
+            squareSymbol: false,
+            symbolRadius: 0,
             symbolHeight: 14,
             symbolWidth: 22,
             x: 45,
