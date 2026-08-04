@@ -44,7 +44,7 @@ SESSION_CONFIG_NAME = "states"    # matches SESSION_CONFIGS[0]['name'] in RE's s
 NUM_PARTICIPANTS    = 8           # 1 block = PLAYERS_PER_GROUP in setup/__init__.py
 MAX_STEPS           = 200
 # Output goes directly in the "Risk Elicitation" folder (sibling to RE), per request.
-OUT_DIR             = r"C:\Users\salins4\OneDrive - Aalto University\Desktop\Risk Elicitation\screenshots"
+OUT_DIR             = r"/Users/svsalin/Desktop/Risk Elicitation/RE/screenshots"
 HEADED              = True
 TESTING_MODE        = True
 
