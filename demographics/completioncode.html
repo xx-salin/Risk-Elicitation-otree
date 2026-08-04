@@ -38,21 +38,21 @@
     <div class="card-body">
         <p>
             {{ if risk_task == "HoltLaury" }}
-                Decision {{ hl_index_to_pay }} was randomly drawn for your Holt-Laury bonus payment.
+                Decision {{ hl_index_to_pay }} was randomly drawn for your risk task.
                 You chose Option {{ hl_option_chosen }} in that decision, and the computer made a random draw based
                 on its probabilities.
             {{ endif }}
             {{ if risk_task == "BRET" }}
                 {{ if bret_bomb_hit }}
-                    In the bomb risk task, you collected {{ bret_boxes_collected }} boxes before stopping, and the
+                    In the risk task, you collected {{ bret_boxes_collected }} boxes before stopping, and the
                     bomb was among them, so this task pays £0.00.
                 {{ else }}
-                    In the bomb risk task, you collected {{ bret_boxes_collected }} boxes before stopping and
+                    In the risk task, you collected {{ bret_boxes_collected }} boxes before stopping and
                     avoided the bomb, earning {{ bret_box_value }} for each box collected.
                 {{ endif }}
             {{ endif }}
             {{ if risk_task == "EckelGrossman" }}
-                You chose Option {{ eg_lottery_choice }} in the Eckel-Grossman task, and the computer's random draw
+                You chose Option {{ eg_lottery_choice }} in the risk task, and the computer's random draw
                 resulted in the {{ eg_outcome_to_pay }} payoff for that option.
             {{ endif }}
         </p>
