@@ -276,9 +276,9 @@ $(function () {
         legend: {
             backgroundColor: '#f8f9fa',
             enabled: true,
-            squareSymbol: false,
-            symbolHeight: 10,
-            symbolWidth: 10,
+            squareSymbol: true,
+            symbolHeight: 14,
+            symbolWidth: 22,
             x: 0,
             y: 10,
             zIndex: 100,

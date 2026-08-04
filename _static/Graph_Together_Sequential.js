@@ -268,9 +268,9 @@ function createChart() {
         legend: {
             align: 'center',
             enabled: true,
-            squareSymbol: false,
-            symbolHeight: 10,
-            symbolWidth: 10,
+            squareSymbol: true,
+            symbolHeight: 14,
+            symbolWidth: 22,
             x: 45,
             y: 20, // Increase this value to move the legend down
             zIndex: 100,
